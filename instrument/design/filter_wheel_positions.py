@@ -24,31 +24,35 @@ SAVE_OUTPUT = True
 VERBOSE = False
 
 ANGLE_BETWEEN_FILTERS = 60.0
-WHEEL_ROTATION_SPEED = 15.0 #degrees per second
+WHEEL_ROTATION_SPEED = 80.0 #degrees per second
 
-OBSERVATION_TIME = 1800.0 #seconds for one day or night observation
+OBSERVATION_TIME = 2223.3 #1800.0 #seconds for one day or night observation
 MISSION_DURATION = 4. * 365. #days of mission
-OBSERVING_ORBITS_PER_DAY = 4. #orbits on which observations are made per day i.e. 4 = 4 daysides and 4 nightsides
+# OBSERVING_ORBITS_PER_DAY = 4. #orbits on which observations are made per day i.e. 4 = 4 daysides and 4 nightsides
 
 
 filter_cycles = {
-    "Nightside H2O low altitude":{"cycle":["F1"], "readout_time":15.},
-    "Nightside SO2 + CO":{"cycle":["F2"], "readout_time":15.},
-    "Nightside H2O vertical profile":{"cycle":["F1", "F3"], "readout_time":15.},
-    "Nightside H2O and SO2 anticorrelation":{"cycle":["F3", "F2"], "readout_time":15.},
-    "Nightside Complete set":{"cycle":["F1", "F3", "F2"], "readout_time":15.},
+    "Nightside H2O low altitude":{"cycle":["F1"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside SO2 + CO":{"cycle":["F2"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside Filter 3 only":{"cycle":["F3"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside H2O vertical profile":{"cycle":["F1", "F3"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside H2O and SO2 anticorrelation":{"cycle":["F3", "F2"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside Complete set":{"cycle":["F1", "F3", "F2"], "readout_time":15., "orbits_per_day":5.},
 
-    "Dayside SO2 + CO":{"cycle":["F2"], "readout_time":1.9},
-    "Dayside H2O and SO2 anticorrelation":{"cycle":["F2", "F4"], "readout_time":1.9},
+    "Dayside SO2 + CO":{"cycle":["F2"], "readout_time":1.9, "orbits_per_day":4.},
+    "Dayside H2O and SO2 anticorrelation":{"cycle":["F2", "F4"], "readout_time":1.9, "orbits_per_day":4.},
+    "Dayside Filter 4 only":{"cycle":["F4"], "readout_time":1.9, "orbits_per_day":4.},
 
-    "Nightside H2O low altitude alternate darks":{"cycle":["D", "F1"], "readout_time":15.},
-    "Nightside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":15.},
-    "Nightside H2O vertical profile alternate darks":{"cycle":["D", "F1", "D", "F3"], "readout_time":15.},
-    "Nightside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F3", "D", "F2"], "readout_time":15.},
-    "Nightside Complete set alternate darks":{"cycle":["D", "F1", "D", "F3", "D", "F2"], "readout_time":15.},
+    "Nightside H2O low altitude alternate darks":{"cycle":["D", "F1"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside Filter 3 alternate darks":{"cycle":["D", "F3"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside H2O vertical profile alternate darks":{"cycle":["D", "F1", "D", "F3"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F3", "D", "F2"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside Complete set alternate darks":{"cycle":["D", "F1", "D", "F3", "D", "F2"], "readout_time":15., "orbits_per_day":5.},
 
-    "Dayside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":1.9},
-    "Dayside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F2", "D", "F4"], "readout_time":1.9},
+    "Dayside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":1.9, "orbits_per_day":4.},
+    "Dayside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F2", "D", "F4"], "readout_time":1.9, "orbits_per_day":4.},
+    "Dayside Filter 4 alternate darks":{"cycle":["D", "F4"], "readout_time":1.9, "orbits_per_day":4.},
 
 
 }
@@ -112,10 +116,10 @@ def make_movement_dict(filter_positions):
 
 
 
-def mission_n_movements(n_movements):
+def mission_n_movements(n_movements, orbits_per_day):
     """calculate number of movements over the full 4 years"""
 
-    n_orbits_mission = MISSION_DURATION * OBSERVING_ORBITS_PER_DAY
+    n_orbits_mission = MISSION_DURATION * orbits_per_day
     n_movements_mission = n_orbits_mission * n_movements
     
     return n_movements_mission
@@ -154,6 +158,7 @@ for filter_positions in filter_position_permutations:
         
         filter_cycle = filter_cycle_info["cycle"]
         readout_time = filter_cycle_info["readout_time"]
+        orbits_per_day = filter_cycle_info["orbits_per_day"]
 
 
         movement_dict = make_movement_dict(filter_positions)
@@ -217,7 +222,7 @@ for filter_positions in filter_position_permutations:
         if VERBOSE:
             print("Total 360 wheel cycles in observation", obs_wheel_cycles)
         
-        mission_wheel_cycles = mission_n_movements(obs_wheel_cycles)
+        mission_wheel_cycles = mission_n_movements(obs_wheel_cycles, orbits_per_day)
         
         if VERBOSE:
             print(line, "Total 360 wheel cycles in mission", mission_wheel_cycles)
