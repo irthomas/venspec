@@ -1,0 +1,5 @@
+In Anaconda Prompt:
+
+cd C:\Users\iant\Dropbox\VenSpec\Python\st
+
+streamlit run Instrument_Model.py

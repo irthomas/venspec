@@ -12,8 +12,13 @@ CALCULATE FILTER WHEEL MOVEMENTS
 import numpy as np
 import itertools
 
-#convert night/day naming scheme to VenSpec name
-FILTER_NAMES = ["D", "F1", "F2", "F3", "F4", "O"] #DARK, NIGHT, DAY+NIGHT, NIGHT, DAY, OPEN
+POLARISATION = True
+# POLARISATION = False
+
+if POLARISATION:
+    FILTER_NAMES = ["D", "F1", "F2", "F3", "F4", "F2P"] #DARK, NIGHT, DAY+NIGHT, NIGHT, DAY, DAY-POLARISED
+else:
+    FILTER_NAMES = ["D", "F1", "F2", "F3", "F4", "O"] #DARK, NIGHT, DAY+NIGHT, NIGHT, DAY, OPEN
 
 
 SAVE_OUTPUT = True
@@ -32,30 +37,37 @@ MISSION_DURATION = 4. * 365. #days of mission
 
 
 filter_cycles = {
-    "Nightside H2O low altitude":{"cycle":["F1"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside SO2 + CO":{"cycle":["F2"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside Filter 3 only":{"cycle":["F3"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside H2O vertical profile":{"cycle":["F1", "F3"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside H2O and SO2 anticorrelation":{"cycle":["F3", "F2"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside Complete set":{"cycle":["F1", "F3", "F2"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside H2O low altitude":{"cycle":["F1"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside SO2 + CO":{"cycle":["F2"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside Filter 3 only":{"cycle":["F3"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside H2O vertical profile":{"cycle":["F1", "F3"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside H2O and SO2 anticorrelation":{"cycle":["F3", "F2"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside Complete set":{"cycle":["F1", "F3", "F2"], "readout_time":14.4, "orbits_per_day":5.},
 
     "Dayside SO2 + CO":{"cycle":["F2"], "readout_time":1.9, "orbits_per_day":4.},
     "Dayside H2O and SO2 anticorrelation":{"cycle":["F2", "F4"], "readout_time":1.9, "orbits_per_day":4.},
     "Dayside Filter 4 only":{"cycle":["F4"], "readout_time":1.9, "orbits_per_day":4.},
 
-    "Nightside H2O low altitude alternate darks":{"cycle":["D", "F1"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside Filter 3 alternate darks":{"cycle":["D", "F3"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside H2O vertical profile alternate darks":{"cycle":["D", "F1", "D", "F3"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F3", "D", "F2"], "readout_time":15., "orbits_per_day":5.},
-    "Nightside Complete set alternate darks":{"cycle":["D", "F1", "D", "F3", "D", "F2"], "readout_time":15., "orbits_per_day":5.},
+    "Nightside H2O low altitude alternate darks":{"cycle":["D", "F1"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside Filter 3 alternate darks":{"cycle":["D", "F3"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside H2O vertical profile alternate darks":{"cycle":["D", "F1", "D", "F3"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F3", "D", "F2"], "readout_time":14.4, "orbits_per_day":5.},
+    "Nightside Complete set alternate darks":{"cycle":["D", "F1", "D", "F3", "D", "F2"], "readout_time":14.4, "orbits_per_day":5.},
 
     "Dayside SO2 + CO alternate darks":{"cycle":["D", "F2"], "readout_time":1.9, "orbits_per_day":4.},
     "Dayside H2O and SO2 anticorrelation alternate darks":{"cycle":["D", "F2", "D", "F4"], "readout_time":1.9, "orbits_per_day":4.},
     "Dayside Filter 4 alternate darks":{"cycle":["D", "F4"], "readout_time":1.9, "orbits_per_day":4.},
 
-
 }
+
+if POLARISATION:
+    filter_cycles["Dayside SO2 + CO and polarisation"] = {"cycle":["F2", "F2P"], "readout_time":1.9, "orbits_per_day":4.}
+    filter_cycles["Dayside H2O + SO2 anticorrelation and polarisation"] = {"cycle":["F2", "F2P", "F4"], "readout_time":1.9, "orbits_per_day":4.}
+    filter_cycles["Dayside SO2 + CO alternate darks and polarisation"] = {"cycle":["D", "F2", "F2P"], "readout_time":1.9, "orbits_per_day":4.}
+    filter_cycles["Dayside H2O + SO2 anticorrelation alternate darks and polarisation"] = {"cycle":["D", "F2", "F2P", "D", "F4"], "readout_time":1.9, "orbits_per_day":4.}
+
+
 
 
 def wheel_filter_permutations(filter_positions):

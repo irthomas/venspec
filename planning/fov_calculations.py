@@ -29,7 +29,7 @@ obs_settings = {
 
 fov_dimensions = np.array([6.7, 0.1333]) * np.pi / 180.0 #degrees to radians
 
-angular_error = 25 / 1000 #mrad to rad
+angular_error = 25 / 1000. #mrad to rad
 
 
 

@@ -18,13 +18,17 @@ import os
 import spiceypy as sp
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from datetime import datetime, timedelta
 
-# from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.backends.backend_pdf import PdfPages
 
 
 from tools.file.paths import paths
-# from tools.plotting.get_colours import get_colours
+from tools.plotting.plot_coloured_line import plot_coloured_line
+
+alpha = 1.0
+
 
 # SPICE_FORMATSTR = "C"
 # SPICE_PRECISION = 0
@@ -34,6 +38,7 @@ SHORT_DATETIME_FMT = "%d %b %Y"
 LONG_DATETIME_FMT = "%Y %b %d %H:%M:%S"
 
 SPICE_METHOD = "INTERCEPT/ELLIPSOID"
+SPICE_SHAPE_MODEL_METHOD = "Ellipsoid"
 SPICE_ABCORR = "NONE"
 # SPICE_OBSRVR = "-668"
 
@@ -95,72 +100,109 @@ for key in orbit_d.keys():
         
     sp.furnsh(os.path.join(kernel_root_dir, "spk", key))
     
-    min_alt = 300
-    max_alt = 300
-        
     
-    #plot for each MTP i.e. 28 days at a time
-    delta_minutes = 94.1 - 3/60.0
     
-    #get start datetime of each MTP for whole of mission
-    dt_starts = [orbit_d[key]["science_start"] + timedelta(minutes=delta_minutes*i) for i in np.arange(10.)]
+    obs_length = 92. * 4.5 #length of observation sequence (minutes)
+    obs_start_delta = 24. * 60. #time between observation sequence start times (minutes)
+    n_starts = 5. #number of observation sequences
 
-    fig, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(5, 5), constrained_layout=True)
-    #loop through orbits
-    for mtp, dt_start in  enumerate(dt_starts):
-    
-        #get science phase start/end ephemeris times
-        dt_end = dt_start + timedelta(minutes=delta_minutes)
-        et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
-        et_end = sp.utc2et(datetime.strftime(dt_end, SPICE_DATETIME_FMT))
+    with PdfPages("%s.pdf" %key) as pdf:
         
-        #make list of ephemeris times        
-        ets = np.arange(et_start, et_end, 1.0) #one value per 1 second
+        for days in range(45, 56+45, 1):
+            science_start = orbit_d[key]["science_start"] + timedelta(days=days)
+        
+            
+            dt_starts = [science_start + timedelta(minutes=obs_start_delta*i) for i in np.arange(n_starts)]
+        
+            fig, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(8, 6), constrained_layout=True)
+        
+            lons_all = []
+            lats_all = []
+            incidence_all = []
+        
+            #loop through orbits
+            for i, dt_start in  enumerate(dt_starts):
+                
+            
+                #get science phase start/end ephemeris times
+                dt_end = dt_start + timedelta(minutes=obs_length)
+                et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
+                et_end = sp.utc2et(datetime.strftime(dt_end, SPICE_DATETIME_FMT))
+                
+                #make list of ephemeris times        
+                ets = np.arange(et_start, et_end, 2.0) #one value per 1 second
+                
+                
+                #spice calculations
+                #sub point data
+                subpnts = [sp.subpnt(SPICE_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, orbit_d[key]["spice_observer"]) for et in ets]
+                subpnts_xyz = [subpnt[0] for subpnt in subpnts]
+                
+                
+                #convert to lat/lons
+                reclats = [sp.reclat(subpnt_xyz) for subpnt_xyz in subpnts_xyz]
+                lons_rad = [reclat[1] for reclat in reclats]
+                lats_rad = [reclat[2] for reclat in reclats]
+                lons = np.asfarray(lons_rad) * sp.dpr()
+                lats = np.asfarray(lats_rad) * sp.dpr()
+                
+                #incidence angles
+                surf_ilumin = [sp.ilumin(SPICE_SHAPE_MODEL_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, orbit_d[key]["spice_observer"], subpnt_xyz) for et, subpnt_xyz in zip(ets, subpnts_xyz)]
+                incidence_angles = np.asarray([ilumin[3] * sp.dpr() for ilumin in surf_ilumin])
+        
+                # incidence_angles_scaled = (incidence_angles - np.min(incidence_angles)) / (np.max(incidence_angles) - np.min(incidence_angles))
+        
+                #plot only when contiguous i.e. avoid longitude wrapping
+                lons_diff = np.abs(np.diff(lons))
+                wrap_ixs = np.where(lons_diff > 150)[0]
+                
+                previous_wrap_ix = 0
+                #loop through contiguous data
+                for wrap_ix in wrap_ixs:
+                    lons_all.append(lons[previous_wrap_ix:wrap_ix])
+                    lats_all.append(lats[previous_wrap_ix:wrap_ix])
+                    incidence_all.append(incidence_angles[previous_wrap_ix:wrap_ix])
+                    
+                    previous_wrap_ix = wrap_ix + 1
         
         
-        #spice calculations
-        venus_radius = sp.bodvrd("VENUS", "RADII", 3)[1][0] #no ellipsoid for Venus -> circular so only one radius value
-
-        #sub point data
-        subpnts = [sp.subpnt(SPICE_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, orbit_d[key]["spice_observer"]) for et in ets]
-        subpnts_xyz = [subpnt[0] for subpnt in subpnts]
+                # plot end of file after final wrap
+                lons_all.append(lons[previous_wrap_ix:])
+                lats_all.append(lats[previous_wrap_ix:])
+                incidence_all.append(incidence_angles[previous_wrap_ix:])
+                
+            # vmin = np.min([np.min(i) for i in incidence_all])
+            # vmax = np.max([np.max(i) for i in incidence_all])
+            
+            vmin = 0.
+            vmax = 180.
+                
+            for lons, lats, incidences in zip(lons_all, lats_all, incidence_all):
+                plot_coloured_line(ax1, lons, lats, (incidences-vmin)/(vmax-vmin))
+                
+            norm = mpl.colors.Normalize(vmin=vmin,vmax=vmax)
+            sm = plt.cm.ScalarMappable(cmap="viridis_r", norm=norm)
+            sm.set_array([])
         
-        
-        #convert to lat/lons
-        reclats = [sp.reclat(subpnt_xyz) for subpnt_xyz in subpnts_xyz]
-        lons_rad = [reclat[1] for reclat in reclats]
-        lats_rad = [reclat[2] for reclat in reclats]
-        lons = np.asfarray(lons_rad) * sp.dpr()
-        lats = np.asfarray(lats_rad) * sp.dpr()
-        
-        #get orbit altitude
-        # find obs position/velocity rel to mars in J2000
-        obs2venus_spkezrs = [sp.spkezr("VENUS", et, "IAU_VENUS", SPICE_ABCORR, orbit_d[key]["spice_observer"]) for et in ets]
-        
-        #height of observer above Mars centre
-        alts = [sp.vnorm(spkezr[0][0:3]) for spkezr in obs2venus_spkezrs] - venus_radius
-        
-        #store minimum and maximum altitudes
-        if min_alt > np.min(alts):
-            min_alt = np.min(alts)
-        if max_alt < np.max(alts):
-            max_alt = np.max(alts)
-
-        plot1 = ax1.plot(lons, lats)
-
-    title = "%s\n%s - %s" %(orbit_d[key]["title"], datetime.strftime(dt_start, LONG_DATETIME_FMT), datetime.strftime(dt_end, LONG_DATETIME_FMT))
-    fig.suptitle(title)
-    ax1.set_ylabel("Latitude")
-    ax1.set_xlabel("Longitude")
-    ax1.grid()
-        
-        # plt.figure()
-        # plt.hist(alts)
-        
-        
+            cbar = fig.colorbar(sm)
+            cbar.set_label("Solar Incidence Angle", rotation=270, labelpad=10)
+            
+            # title = "%s\n%s - %s" %(orbit_d[key]["title"], datetime.strftime(dt_starts[0], LONG_DATETIME_FMT), datetime.strftime(dt_end, LONG_DATETIME_FMT))
+            title = "%s - %s" %(datetime.strftime(dt_starts[0], LONG_DATETIME_FMT), datetime.strftime(dt_end, LONG_DATETIME_FMT))
+            fig.suptitle(title)
+            ax1.set_ylabel("Latitude")
+            ax1.set_xlabel("Longitude")
+            ax1.grid()
+            
+            stop()
+            
+            # fig.savefig("EnVision_orbit_incidence_angle_day%i.png" %days)
+            pdf.savefig()
+            plt.close()
+            
 
     
     sp.kclear()
     
-    print(key)
-    print("Altitude range=", min_alt, max_alt)
+    # print(key)
+    # print("Altitude range=", min_alt, max_alt)
