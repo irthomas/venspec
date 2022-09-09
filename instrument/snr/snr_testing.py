@@ -8,16 +8,16 @@ SNR MODEL COMPARING TO VALUES IN OIP SNR REPORT V3.0
 """
 # import os
 import numpy as np
-import scipy.constants as spc
+# import scipy.constants as spc
 import matplotlib.pyplot as plt
 
 
 
 from instrument.snr.spectrometer_calculations import spectral_cal
-from instrument.snr.hr_nadir_spectra import hr_nadir_spectra
+# from instrument.snr.hr_nadir_spectra import hr_nadir_spectra
 from instrument.snr.detector_qe import detector_qe
 
-
+from instrument.snr_model.snr_functions import F_solid_angle, F_planck, F_omegaA, F_signal_det, F_thermal_background, F_adc
 
 #scalars to make the thermal background work
 det_window_tb_scalar = 0.32
@@ -27,56 +27,6 @@ cold_section_tb_scalar = 0.76
 
 
 
-def F_planck(nu_m, T): #W/m2/sr/m
-
-    a = 2. * spc.h * spc.c**2.
-    b =  spc.h* spc.c /(nu_m * spc.k * T)
-    planck = a / ( (nu_m**5.) * (np.exp(b) - 1.) )
-    return planck
-
-
-
-def F_signal_det(px_Wm2m, px_m, px_fwhm_m, trans, omegaA, qe):
-    
-    signal = px_Wm2m * px_m * px_fwhm_m * trans * omegaA * qe / (spc.c * spc.h)
-    
-    return signal
-
-
-
-def F_thermal_background(planck, qe, omega, px_area_m, nu_m, emis, trans):
-    
-    tb = planck * qe * omega * px_area_m * nu_m * emis * trans / (spc.c * spc.h)
-    
-    # plt.figure()
-    # plt.plot(nu_m, tb)
-    integrated_tb = np.trapz(tb, x=nu_m) #W/m2/sr
-    return integrated_tb
-
-
-
-def F_adc(signal, dc, tb, it, n_bits):
-    #set signal = 0 for dark frames
-    
-    adc = ((signal + dc + tb) * it) / (np.sqrt(12.) * 2.**n_bits)
-    
-    return adc
-    
-    
-
-def F_solid_angle(fno):
-    
-    omega = 2. * np.pi * (1. - np.sqrt(1. - (1./(4. * fno**2.))))
-    return omega
-    
-
-
-def F_omegaA(fno, px_m2):
-    
-    omegaA = F_solid_angle(fno) * px_m2
-    return omegaA
-
-            
          
             
          
@@ -138,8 +88,6 @@ def detector_dict(band_dict, daynight, t):
     
     
     # """signal on detector"""
-    # """readout noise (only for gain=2)"""
-    # detector["qe"] = 0.75 #simplified from OIP model
     detector["n_px"] = band_dict["n_px"]
     
     detector["px_m"] = px_m

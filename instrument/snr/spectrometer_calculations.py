@@ -38,7 +38,6 @@ slit_width = 1. #pixels
 # slit_width = 2. #pixels
 
 
-nadir = hr_nadir_spectra(1)
 
 
 def spectral_cal():
@@ -182,6 +181,8 @@ def plot_spectral_cal():
             # ax2.plot([um, um], [0, 1], c="k", alpha=alpha)
             
     
+        nadir = hr_nadir_spectra(1)
+
         if "d" in band_dict[band]["daynight"]:
             day_ixs = np.searchsorted(nadir["day_um"], band_dict[band]["detector_ums"])
             ax2.plot(nadir["day_um"][day_ixs], nadir["day_Wm2um"][day_ixs]/np.max(nadir["day_Wm2um"][day_ixs]), label="Band %s day normalised" %band)
