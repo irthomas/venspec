@@ -15,32 +15,41 @@ from tools.file.write_log import write_log
 from tools.spice.load_spice_kernels import load_spice_kernels, SPICE_DATETIME_FMT, \
     SPICE_METHOD, SPICE_ABCORR, SPICE_SHAPE_MODEL_METHOD
 
+from tools.general.progress import progress
+
 #load spice kernels
 orbit_name = "EnVision_ESC_T2_2032_SouthVOI"
+orbit_name = "EnVision_HEO_T2_2032_NorthVOI"
 orbit_dict = load_spice_kernels("%s.bsp" %orbit_name)
+
 
 #get integration time depending on observation type
 obs_settings = {
-    "dayside":{"integration_time":1.9},
-    "nightside":{"integration_time":14.4},
+    "dayside":{"integration_time":1.0},
+    "nightside":{"integration_time":13.},
     }
 
 
 
 fov_dimensions = np.array([6.7, 0.1333]) * np.pi / 180.0 #degrees to radians
 
-angular_error = 25 / 1000. #mrad to rad
+
+angular_error = 25 / 1000. #86 arcminutes in mrad, converted to rad. Value for 14.4 seconds
 
 
+
+
+    
+print("SPICE calculations")
 
 #get science phase start/end ephemeris times
 dt_start = orbit_dict["science_start"]
-dt_end = dt_start + timedelta(days=7)
+dt_end = dt_start + timedelta(days=70)
 et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
 et_end = sp.utc2et(datetime.strftime(dt_end, SPICE_DATETIME_FMT))
 
 #make list of ephemeris times        
-ets = np.arange(et_start, et_end, 60.0) #one value per 60 seconds
+ets = np.arange(et_start, et_end, 120.0) #one value per X seconds
 
 #make strings
 dts = [sp.et2utc(et, "C", 0) for et in ets]
@@ -80,12 +89,12 @@ incidence_angles = [ilumin[3] * sp.dpr() for ilumin in surf_ilumin]
 
 
 #write to file
-write_log("Time\tObservation Type\tLongitude\tLatitude\tAltitude\tSpeed\tSurface FOV across-track\tSurface FOV along-track\tSurface FOV along-track error", "%s_fovs.txt" %orbit_name)
+write_log("Time\tObservation Type\tLongitude\tLatitude\tAltitude\tSpeed\tSurface FOV across-track\tSurface FOV along-track\tSurface FOV along-track error\tSurface FOV along-track with error", "%s_fovs.txt" %orbit_name)
 
 
-for i in range(n_points):
-    ifov = 2.0 * np.tan(fov_dimensions / 2.0) * altitudes[i]
-    fov_error = np.tan(angular_error) * altitudes[i]
+max_values = {"fov along":0, "fov+error along":0, "error along":0}
+for i in progress(range(n_points)):
+    
     
     if incidence_angles[i] < 90.0:
         obs_type = "dayside"
@@ -95,11 +104,30 @@ for i in range(n_points):
     obs_params = obs_settings[obs_type]
     distance = speeds[i] * obs_params["integration_time"]
 
+    angular_error_over_it = angular_error * obs_params["integration_time"] / 14.4 #ratio of error to 14.4s as defined as the RPE
+    
+    ifov = 2.0 * np.tan(fov_dimensions / 2.0) * altitudes[i]
+    fov_error = np.tan(angular_error_over_it) * altitudes[i]
+
     #calculate field of view including s/c velocity
     fov = ifov + distance
    
     #write to file
-    line = "%s\t%s\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f" \
-        %(dts[i], obs_type, lons[i], lats[i], altitudes[i], speeds[i], ifov[0], fov[1], fov_error)
+    line = "%s\t%s\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f" \
+        %(dts[i], obs_type, lons[i], lats[i], altitudes[i], speeds[i], ifov[0], fov[1], fov_error, fov[1]+fov_error)
         
+    
+    
     write_log(line, "%s_fovs.txt" %orbit_name)
+
+    if fov[1] > max_values["fov along"]:
+        max_values["fov along"] = fov[1]
+    if fov[1]+fov_error > max_values["fov+error along"]:
+        max_values["fov+error along"] = fov[1]+fov_error
+    if fov_error > max_values["error along"]:
+        max_values["error along"] = fov_error
+        
+      
+print(orbit_name)
+for key in max_values:
+    print(key, ":", max_values[key])

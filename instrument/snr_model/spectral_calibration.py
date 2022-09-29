@@ -38,7 +38,8 @@ def spectral_calibration(self, band):
     
     #spectral resolution: width of gaussian encompassing wavelengths received by a pixel * 2.355
     #resolving power = lambda/delta_lambda
-    self.px_delta_lambda_um = self.band_centre_um / self.resolving_power
+    self.px_delta_lambda_um = self.band_centre_um / self.theoretical_resolving_power
+    self.real_px_delta_lambda_um = self.band_centre_um / self.real_resolving_power #for ILS calculation, use reduced RP 
     
     #spectral sampling: wavelength between centre of adjacent pixels
     px_sampling_um = self.px_delta_lambda_um / self.slit_width

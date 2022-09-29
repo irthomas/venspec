@@ -10,11 +10,6 @@ import numpy as np
 import scipy.constants as spc
 
 
-def gaussian(x, a, b, c, d):
-    return a * np.exp(-((x - b)/c)**2.0) + d
-
-
-
 
 
 def F_planck(nu_m, T): #W/m2/sr/m
