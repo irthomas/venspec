@@ -31,8 +31,9 @@ def venus(self, band, daynight):
             
         else:
             #if no filename given, manually select OIP radiances
-            #set wavelength to mean of order
-            self.px_um = np.zeros(3) + np.mean(self.px_um)
+            #set wavelength to mean 3 values of the diffraction order
+            px_length = len(self.px_um)
+            self.px_um = self.px_um[int(px_length/2)-1:int(px_length/2)+2]
             self.venus_wm2um = np.zeros(3)
             self.venus_wm2um[2] = {"2a":23, "2b":18, "4":176}[band]
             self.venus_wm2um[1] = {"2a":21, "2b":17, "4":165}[band]
@@ -52,8 +53,9 @@ def venus(self, band, daynight):
             
         else:
             #if no filename given, manually select OIP radiances
-            #set wavelength to mean of order
-            self.px_um = np.zeros(3) + np.mean(self.px_um)
+            #set wavelength to mean 3 values of the diffraction order
+            px_length = len(self.px_um)
+            self.px_um = self.px_um[int(px_length/2)-1:int(px_length/2)+2]
             self.venus_wm2um = np.zeros(3)
             self.venus_wm2um[2] = {"1":0.1051, "2a":0.1507, "2b":0.0451, "3":0.2635}[band]
             self.venus_wm2um[1] = {"1":0.0314, "2a":0.0702, "2b":0.0252, "3":0.0667}[band]
@@ -128,8 +130,11 @@ def signal(self, band):
     # signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] + signal["spectrometer_es"] + signal["warmsection_es"]
     
     #TO DO: do this calculation properly rather than analytically
-    signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] * self.det_window_tb_scalar +\
-        signal["spectrometer_es"] * self.cold_section_tb_scalar + signal["warmsection_es"]
+    det_window_tb_scalar = 0.32
+    cold_section_tb_scalar = 0.76
+    
+    signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] * det_window_tb_scalar +\
+        signal["spectrometer_es"] * cold_section_tb_scalar + signal["warmsection_es"]
 
 
 

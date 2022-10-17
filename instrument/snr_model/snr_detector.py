@@ -12,13 +12,15 @@ import numpy as np
 
 def detector_settings(self, band, daynight):
     
+    max_it = self.max_integration_time
+    
     if self.t_cold_section == 273:
         self.gain = 2
         
         if daynight == "d":
             self.integration_time = {"2a":0.948, "2b":0.948, "4":0.365}[band]
         if daynight == "n":
-            self.integration_time = {"1":14.401, "2a":14.401, "2b":14.401, "3":14.401}[band]
+            self.integration_time = {"1":max_it, "2a":max_it, "2b":max_it, "3":max_it}[band]
     
     elif self.t_cold_section == 253:
         
@@ -27,7 +29,7 @@ def detector_settings(self, band, daynight):
             self.integration_time = {"2a":0.976, "2b":0.976, "4":0.369}[band]
         if daynight == "n":
             self.gain = 1
-            self.integration_time = {"1":14.401, "2a":14.401, "2b":14.401, "3":14.401}[band]
+            self.integration_time = {"1":max_it, "2a":max_it, "2b":max_it, "3":max_it}[band]
     
     elif self.t_cold_section == 228:
         
@@ -36,7 +38,7 @@ def detector_settings(self, band, daynight):
             self.integration_time = {"2a":0.982, "2b":0.982, "4":0.370}[band]
         if daynight == "n":
             self.gain = 1
-            self.integration_time = {"1":14.401, "2a":14.401, "2b":14.401, "3":14.401}[band]
+            self.integration_time = {"1":max_it, "2a":max_it, "2b":max_it, "3":max_it}[band]
     
     elif self.t_cold_section == 213:
         
@@ -45,7 +47,7 @@ def detector_settings(self, band, daynight):
             self.integration_time = {"2a":0.982, "2b":0.982, "4":0.370}[band]
         if daynight == "n":
             self.gain = 1
-            self.integration_time = {"1":14.401, "2a":14.401, "2b":14.401, "3":14.401}[band]
+            self.integration_time = {"1":max_it, "2a":max_it, "2b":max_it, "3":max_it}[band]
 
     else:
         #if cold section temperature is not a given OIP setpoint, just use the cold settings
@@ -55,7 +57,7 @@ def detector_settings(self, band, daynight):
             self.integration_time = {"2a":0.982, "2b":0.982, "4":0.370}[band]
         if daynight == "n":
             self.gain = 1
-            self.integration_time = {"1":14.401, "2a":14.401, "2b":14.401, "3":14.401}[band]
+            self.integration_time = {"1":max_it, "2a":max_it, "2b":max_it, "3":max_it}[band]
     
 
     self.readout_noise = {1:125., 2:235.}[self.gain]

@@ -24,13 +24,10 @@ if SYSTEM == "Linux": #linux system
 elif os.path.exists(os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python")): #outside BIRA
 
     paths["BASE_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python")
+    paths["PLANNING_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python\Planning\vs_obs")
 
     paths["KERNEL_ROOT_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Documents\DATA\envision_kernels\envision\kernels")
     paths["KERNEL_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Documents\DATA\envision_kernels\envision\kernels\mk")
 
-    paths["REFERENCE_DIRECTORY"] = os.path.join(paths["BASE_DIRECTORY"], "reference_files")
 
 
-
-
-# print("BASE_DIRECTORY=%s" %paths["BASE_DIRECTORY"])

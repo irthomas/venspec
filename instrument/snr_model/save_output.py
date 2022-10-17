@@ -85,6 +85,7 @@ def save_plot(self, band, daynight, band_ix):
     self.axes1[band_ix].set_title("Band %s %s" %(band, {"d":"day", "n":"night"}[daynight]))
     
     self.axes1[band_ix].set_yscale("log")
+    self.axes1[band_ix].ticklabel_format(axis="x", useOffset=False)
     
     title = output_split[0] + "_radiance_scalar=%0.2f_t_cold_section=%0.0fK_real_RP=%i_ils_convolution=%s" \
             %(self.input_radiance_scalar, self.t_cold_section, self.real_resolving_power, self.ils_convolution)
