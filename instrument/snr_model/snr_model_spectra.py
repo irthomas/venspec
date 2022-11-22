@@ -40,9 +40,37 @@ from input_spectra import load_asimut_spectra
 #insert paths to high resolution spectra - assume Asimut output with 2 columns (nm and W m-2 sr-1 µm-1), 4 header rows and nm in decreasing order
 #if left blank, the OIP values will be used instead for comparison with their SNR report
 
+
+### LINUX ###
+# day_input_filepath = "Simulations_LIDORT_dayside_scattering_molecule_aer_Rayleigh_entirerange_AERNIgn_alt540_Nstreams24_sp_nonoise.dat"
+# night_input_filepath = "Simulations_LIDORT_nightside_scattering_molecule_aer_Rayleigh_entirerange_AERNIgn_alt540_Nstreams24_sp_nonoise.dat"
+
+# bands 2a and 2b only
+# day_input_filepath = "nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_EMlinelist_specR_040_dayside_SP1_FEN1_rad_forw.dat"
+# night_input_filepath = "nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_EMlinelist_specR_030_nightside_SP1_FEN1_rad_forw.dat"
+
+
+### WINDOWS ###
+
+# day_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\Simulations_LIDORT_dayside_scattering_molecule_aer_Rayleigh_entirerange_AERNIgn_alt540_Nstreams24_sp_nonoise.dat"
+# night_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\Simulations_LIDORT_nightside_scattering_molecule_aer_Rayleigh_entirerange_AERNIgn_alt540_Nstreams24_sp_nonoise.dat"
+
+# all bands high res - old
+# day_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_HITRAN2020_FBord_125_final_specR_040_dayside_SP1_FEN1_rad_forw.dat"
+# night_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_HITRAN2020_FBord_125_final_specR_030_nightside_SP1_FEN1_rad_forw.dat"
+
+# bands 2a and 2b only
+# day_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_EMlinelist_specR_040_dayside_SP1_FEN1_rad_forw.dat"
+# night_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_EMlinelist_specR_030_nightside_SP1_FEN1_rad_forw.dat"
+
+# all bands high res - 27 Sep 2022
+day_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_HITRAN2020_FBord_125_dayside_specR_025_SP1_FEN1_radNC.dat"
+night_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_HITRAN2020_FBord_125_nightside_specR_025_SP1_FEN1_radNC.dat"
+
+
 #use OIP max/mean/min radiance values from the report if filepaths are left blank
-day_input_filepath = ""
-night_input_filepath = ""
+# day_input_filepath = ""
+# night_input_filepath = ""
 
 
 
@@ -77,8 +105,8 @@ scale_2b = True
 # auto = False
 
 
-#scale the Venus input radiance by a factor. 1.0 = no change; 0.1 = closest match to previous studies
-input_radiance_scalar = 1.0
+#scale the Venus input radiance by a factor. 1.0 = no change; 0.1 = closest match of Sev output to previous studies
+input_radiance_scalar = 0.1
 
 
 #simulate blaze function: shape can be 'flat' or 'sinc2'
@@ -105,12 +133,12 @@ transmittance_complete = 0.41 #total transmittance of the instrument without gra
 #specify bands to analyse, dayside (d) and/or nightside (n)
 bands = [
     ["1", "n"],
-    ["2a", "d"],
-    ["2a", "n"],
-    ["2b", "d"],
-    ["2b", "n"],
-    ["3", "n"],
-    ["4", "d"],
+    # ["2a", "d"],
+    # ["2a", "n"],
+    # ["2b", "d"],
+    # ["2b", "n"],
+    # ["3", "n"],
+    # ["4", "d"],
 ]
 
 
@@ -255,4 +283,176 @@ class snr_model_calc(object):
 
 
 # run calculations for temperature given above
-snr = snr_model_calc(bands)
+# snr = snr_model_calc(bands)
+
+
+#run for different cold section temperatures OIP model
+# for t_cold_section in [228., 238., 248., 258., 268.]:
+#     snr = snr_model_calc(bands)
+
+
+#run for different cold section temperatures
+# for t_cold_section in [273., 263., 253., 243., 233., 228.]:
+#     snr = snr_model_calc(bands)
+
+
+
+#for Justin
+#run for different ILS widths
+# plt.figure()
+# for ils_gaussian_width in [3., 5., 10.]:
+#     snr = snr_model_calc(bands)
+#     plt.plot(snr.px_um, snr.venus_wm2um, label=ils_gaussian_width)
+# plt.legend()
+
+
+#for Severine
+#run for different cold section temperatures and different input radiance scalar
+# for t_cold_section in [273., 263., 253., 243., 233., 228.]:
+#     for input_radiance_scalar in [1.0, 1.0/3.0, 0.1]:
+#         snr = snr_model_calc(bands)
+
+#for Severine
+#run for different footprint sizes and different input radiance scalar
+# for max_integration_time in [14.4, 28.8, 43.2, 57.6, 72.0]:
+#     for input_radiance_scalar in [0.1, 1.0]:
+#         snr = snr_model_calc(bands)
+
+
+
+# plot HR input spectrum and convolve output for various RPs
+# choose 1 band only
+# from input_spectra import load_asimut_spectra_cm1
+# from save_output_ASIMUT import convert_units_add_noise
+# import matplotlib.pyplot as plt
+
+# input_radiance_scalar = 0.1
+# plt.figure(figsize=(10, 5), constrained_layout=True)
+
+# plot_output = False
+# save_output = False
+
+# for i, real_resolving_power in enumerate([2000., 7000., 8400., 11000.]):
+
+#     snr = snr_model_calc(bands)
+#     if i == 0:
+#         load_asimut_spectra_cm1(snr)
+#         plt.plot(snr.night_cm1, snr.night_Wcm2cm1, label="High resolution input spectrum")
+
+#     venus_cm1, venus_wcm2cm1, _, _ = convert_units_add_noise(snr.px_um, snr.venus_wm2um, snr.signal["snr"])
+#     plt.plot(venus_cm1, venus_wcm2cm1, label="Convolved spectrum on detector RP=%0.0f" %real_resolving_power)
+# plt.legend()            
+# plt.grid()
+# plt.yscale("log")
+# plt.xlim((venus_cm1[0]-1, venus_cm1[-1]+1))
+# # plt.ylim((np.min(venus_wcm2cm1[0])/1e3, np.max(venus_wcm2cm1[-1]*1e3)))
+# plt.ylim((np.min(venus_wcm2cm1[0])/1e2, np.max(venus_wcm2cm1[-1]*1e1)))
+# plt.xlabel("Wavenumber cm-1")
+# plt.ylabel("Radiance W/cm2/sr/cm-1")
+# plt.title("Band %s %s" %(snr.band, {"d":"day", "n":"night"}[snr.daynight]))
+# plt.savefig("resolving_power_band_%s_%s.png" %(snr.band, {"d":"day", "n":"night"}[snr.daynight]))
+
+
+
+#plot SNR for various blaze efficiencies and shapes
+# import matplotlib.pyplot as plt
+# fig1, ax1 = plt.subplots(figsize=(10, 5), constrained_layout=True)
+# fig2, ax2 = plt.subplots(figsize=(10, 5), constrained_layout=True)
+
+# for blaze_shape in ["flat", "sinc2"]:
+#     for blaze_peak in [0.8, 0.9]:
+#         snr = snr_model_calc(bands)
+#         ax1.plot(snr.px_um, snr.signal["snr"], label="Blaze: %s, peak %0.1f" %(blaze_shape, blaze_peak))
+#         ax2.plot(snr.px_um, snr.signal["snr_binned"], label="Blaze: %s, peak %0.1f" %(blaze_shape, blaze_peak))
+
+# ax1.legend()            
+# ax1.grid()
+# ax1.set_xlabel("Wavelength um")
+# ax1.set_ylabel("SNR 1 pixel")
+# ax1.set_title("Band %s %s SNR (1 pixel)\nBlaze shape: %s peak: %0.1f" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], blaze_shape, blaze_peak))
+# fig1.savefig("blaze_snr1px_band_%s_%s.png" %(snr.band, {"d":"day", "n":"night"}[snr.daynight]))
+    
+# ax2.legend()            
+# ax2.grid()
+# ax2.set_xlabel("Wavelength um")
+# ax2.set_ylabel("SNR Binned")
+# ax2.set_title("Band %s %s SNR (binned)\nBlaze shape: %s peak: %0.1f" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], blaze_shape, blaze_peak))
+# fig2.savefig("blaze_snrbinned_band_%s_%s.png" %(snr.band, {"d":"day", "n":"night"}[snr.daynight]))
+    
+
+
+# plot HR input spectrum vs planck functions of different temperatures
+# import matplotlib.pyplot as plt
+# from input_spectra import load_asimut_file_cm1
+
+# cm1, wcm2cm1 = load_asimut_file_cm1(night_input_filepath)
+
+# um = 10000.0 / cm1
+# wm2um = wcm2cm1 * 1.0e8 / um**2
+
+# fig1, ax1 = plt.subplots(figsize=(10, 5), constrained_layout=True)
+# fig2, ax2 = plt.subplots(figsize=(10, 5), constrained_layout=True)
+# ax1.plot(cm1, wcm2cm1, label="High resolution input spectrum")
+# ax2.plot(um, wm2um, label="High resolution input spectrum")
+
+# c1 = 1.191e-5
+# c2 = 1.43877
+
+# for t in [500, 600, 700]:
+#     lcm1 = ((c1 * cm1**3) / (np.exp(c2 * cm1 / t)-1))/1.0e7
+#     lum = lcm1 * 1.0e8 / um**2
+#     ax1.plot(cm1, lcm1, label="%iK Planck" %t)
+#     ax2.plot(um, lum, label="%iK Planck" %t)
+# # ax1.set_yscale("log")
+# ax1.legend()
+# # ax2.set_yscale("log")
+# ax2.legend()
+# ax2.set_xlim(1.16, 1.18)
+# ax2.set_ylim(0, 0.5)
+
+
+
+
+# plot HR input spectrum and convolve output for various RPs
+# choose 1 band only
+from input_spectra import load_asimut_spectra_cm1
+from save_output_ASIMUT import convert_units_add_noise
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+input_radiance_scalar = 0.1
+
+plot_output = False
+save_output = False
+
+shift = 0.0001063522949549256 #band 1 spectral sampling
+
+with PdfPages("spectral_shift.pdf") as pdf: #open pdf
+
+
+    for i, spectral_shift_scalar in enumerate(np.arange(10.0) /10.0):
+    
+        plt.figure(figsize=(10, 5), constrained_layout=True)
+        spectral_shift = shift * spectral_shift_scalar
+        
+        
+        snr = snr_model_calc(bands)
+        load_asimut_spectra_cm1(snr)
+        plt.plot(snr.night_cm1, snr.night_Wcm2cm1, label="High resolution input spectrum")
+    
+        venus_cm1, venus_wcm2cm1, _, _ = convert_units_add_noise(snr.px_um, snr.venus_wm2um, snr.signal["snr"])
+        plt.plot(venus_cm1, venus_wcm2cm1)
+    
+        # plt.legend()            
+        plt.grid()
+        plt.yscale("log")
+        plt.xlim((venus_cm1[0]-1, venus_cm1[-1]+1))
+        # plt.ylim((np.min(venus_wcm2cm1[0])/1e3, np.max(venus_wcm2cm1[-1]*1e3)))
+        plt.ylim((np.min(venus_wcm2cm1)/2, np.max(venus_wcm2cm1)*2))
+        plt.xlabel("Wavenumber cm-1")
+        plt.ylabel("Radiance W/cm2/sr/cm-1")
+        plt.title("Band %s %s\nPixel centre wavelengths shifted by %0.06fum" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], spectral_shift))
+    # plt.savefig("spectral_shift_%s_%s.png" %(snr.band, {"d":"day", "n":"night"}[snr.daynight]))
+
+        pdf.savefig()
+        plt.close()

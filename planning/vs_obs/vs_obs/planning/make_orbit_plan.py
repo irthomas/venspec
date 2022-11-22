@@ -9,7 +9,7 @@ import numpy as np
 from datetime import timedelta
 
 
-from vs_obs.config.constants import PRECOOLING_DURATION, STANDBY_DURATION, DETECTOR_READOUT_TIME
+from vs_obs.config.constants import PRECOOLING_DURATION, STANDBY_DURATION, DETECTOR_READOUT_TIME, SAVE_HTML
 from vs_obs.planning.spice_functions import next_d2n_terminator, next_n2d_terminator, dt2et, et2dt, fov_lonlat, sc_alt
 from vs_obs.filter_selection import obs_types, filter_parameters
 from vs_obs.planning.filter_wheel_functions import calculate_angle, calculate_wheel_rotation_time
@@ -28,7 +28,9 @@ def make_orbit_plan(utc_start_time, fov_vectors):
     
     #start at night to day terminator
     dt_start = next_n2d_terminator(utc_start_time)
-    h += plan_table_row(dt_start, "Day to night terminator")
+    
+    if SAVE_HTML:
+        h += plan_table_row(dt_start, "Day to night terminator")
     
     orbit_plan.append([dt_start, {"daynight":"d", "status":"off"}])
     
@@ -38,12 +40,15 @@ def make_orbit_plan(utc_start_time, fov_vectors):
     #find precooling start
     dt_standby_start = dt_next_sunset - timedelta(seconds=(PRECOOLING_DURATION + STANDBY_DURATION))
     orbit_plan.append([dt_standby_start, {"daynight":"d", "status":"standby"}])
-    h += plan_table_row(dt_standby_start, "Standby start")
+    
+    if SAVE_HTML:
+        h += plan_table_row(dt_standby_start, "Standby start")
     
     
     dt_precooling_start = dt_next_sunset - timedelta(seconds=PRECOOLING_DURATION)
     orbit_plan.append([dt_precooling_start, {"daynight":"d", "status":"precooling"}])
-    h += plan_table_row(dt_precooling_start, "Precooling start")
+    if SAVE_HTML:
+        h += plan_table_row(dt_precooling_start, "Precooling start")
     
     
     
@@ -95,13 +100,15 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 
                 #start of integration time
                 lonlats_s = fov_lonlat(et, fov_vectors)
-                h += plan_table_row(et2dt(et), "Filter %s start (%0.2f, %0.2f)" %(filter_name, *lonlats_s[0, :]))
+                if SAVE_HTML:
+                    h += plan_table_row(et2dt(et), "Filter %s start (%0.2f, %0.2f)" %(filter_name, *lonlats_s[0, :]))
 
                 et += integration_time
 
                 #end of integration time
                 lonlats_e = fov_lonlat(et, fov_vectors)
-                h += plan_table_row(et2dt(et), "Filter %s end (%0.2f, %0.2f)" %(filter_name, *lonlats_e[0, :]))
+                if SAVE_HTML:
+                    h += plan_table_row(et2dt(et), "Filter %s end (%0.2f, %0.2f)" %(filter_name, *lonlats_e[0, :]))
     
                 
                 #get altitude
@@ -109,13 +116,20 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 alts.append(alt)
                 
         
-        
+                #make footprint polygon including integration time
+                footprint = np.zeros((5, 2))
+                footprint[0, :] = lonlats_s[1, :]
+                footprint[1, :] = lonlats_e[2, :]
+                footprint[2, :] = lonlats_e[3, :]
+                footprint[3, :] = lonlats_s[0, :]
+                footprint[4, :] = lonlats_s[1, :]
         
                 
                 if "dk" not in filter_name:
                     orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"science", \
                                                    "semiorbit":obs_ix, "alt":alt, "filter":filter_name, \
-                                                   "footprint_s":lonlats_s, "footprint_e":lonlats_e}])
+                                                   "footprint_s":lonlats_s, "footprint_e":lonlats_e, \
+                                                   "footprint":footprint}])
                 else:
                     orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"dark"}])
             
@@ -132,13 +146,17 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 if filter_name != next_filter_name:
                     
                     filter_wheel_angle = calculate_angle(filter_name, next_filter_name)
-                    h += plan_table_row(et2dt(et), "Filter movement start %s" %filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Filter movement start %s" %filter_name)
                     et += calculate_wheel_rotation_time(filter_wheel_angle)
-                    h += plan_table_row(et2dt(et), "Filter movement end %s" %next_filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Filter movement end %s" %next_filter_name)
                 else:
-                    h += plan_table_row(et2dt(et), "Detector readout start %s" %filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Detector readout start %s" %filter_name)
                     et += DETECTOR_READOUT_TIME
-                    h += plan_table_row(et2dt(et), "Detector readout end %s" %filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Detector readout end %s" %filter_name)
                 
                 i += 1
             # print(day_ix, night_ix, daynight, np.min(alts), np.mean(alts), np.max(alts))
@@ -147,7 +165,8 @@ def make_orbit_plan(utc_start_time, fov_vectors):
             #pop last entry if over the sunrise
             if et > dt2et(dt_next_sunrise):
                 orbit_plan.pop(-1)
-                h += plan_table_row(et2dt(et), "Last observation removed")
+                if SAVE_HTML:
+                    h += plan_table_row(et2dt(et), "Last observation removed")
                 
                 
             night_ix += 1
@@ -173,9 +192,11 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 lonlats_s = fov_lonlat(et, fov_vectors)
     
     
-                h += plan_table_row(et2dt(et), "Filter %s start" %filter_name)
+                if SAVE_HTML:
+                    h += plan_table_row(et2dt(et), "Filter %s start" %filter_name)
                 et += integration_time
-                h += plan_table_row(et2dt(et), "Filter %s end" %filter_name)
+                if SAVE_HTML:
+                    h += plan_table_row(et2dt(et), "Filter %s end" %filter_name)
     
                 
                 #end of integration time
@@ -186,10 +207,20 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 alt = sc_alt(et)
                 alts.append(alt)
                 
+                #make footprint polygon including integration time
+                footprint = np.zeros((5, 2))
+                footprint[0, :] = lonlats_s[1, :]
+                footprint[1, :] = lonlats_e[2, :]
+                footprint[2, :] = lonlats_e[3, :]
+                footprint[3, :] = lonlats_s[0, :]
+                footprint[4, :] = lonlats_s[1, :]
+
+
                 if "dk" not in filter_name:
                     orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"science", \
                                                    "semiorbit":obs_ix, "alt":alt, "filter":filter_name, \
-                                                   "footprint_s":lonlats_s, "footprint_e":lonlats_e}])
+                                                   "footprint_s":lonlats_s, "footprint_e":lonlats_e, \
+                                                   "footprint":footprint}])
                 else:
                     orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"dark"}])
             
@@ -206,13 +237,17 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 if filter_name != next_filter_name:
                     
                     filter_wheel_angle = calculate_angle(filter_name, next_filter_name)
-                    h += plan_table_row(et2dt(et), "Filter movement start %s" %filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Filter movement start %s" %filter_name)
                     et += calculate_wheel_rotation_time(filter_wheel_angle)
-                    h += plan_table_row(et2dt(et), "Filter movement end %s" %next_filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Filter movement end %s" %next_filter_name)
                 else:
-                    h += plan_table_row(et2dt(et), "Detector readout start %s" %filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Detector readout start %s" %filter_name)
                     et += DETECTOR_READOUT_TIME
-                    h += plan_table_row(et2dt(et), "Detector readout end %s" %filter_name)
+                    if SAVE_HTML:
+                        h += plan_table_row(et2dt(et), "Detector readout end %s" %filter_name)
                 
                 i += 1
             # print(day_ix, night_ix, daynight, np.min(alts), np.mean(alts), np.max(alts))
@@ -221,20 +256,24 @@ def make_orbit_plan(utc_start_time, fov_vectors):
             #pop last entry if over the sunrise
             if et > dt2et(dt_next_sunset):
                 orbit_plan.pop(-1)
-                h += plan_table_row(et2dt(et), "Last observation removed")
+                if SAVE_HTML:
+                    h += plan_table_row(et2dt(et), "Last observation removed")
 
             day_ix += 1
 
 
         #add 20 seconds of standby
-        h += plan_table_row(et2dt(et), "Standby start")
+        if SAVE_HTML:
+            h += plan_table_row(et2dt(et), "Standby start")
         et += 20.
-        h += plan_table_row(et2dt(et), "Standby end")
+        if SAVE_HTML:
+           h += plan_table_row(et2dt(et), "Standby end")
 
         orbit_plan.append([et2dt(et), {"daynight":"", "status":"standby"}])
         
-        save_plan_table(h, "obs_%s_%02i" %(daynight, obs_ix))
-        h = "" #clear output
+        if SAVE_HTML:
+            save_plan_table(h, "obs_%s_%02i" %(daynight, obs_ix))
+            h = "" #clear output
         
     
     return orbit_plan, h

@@ -9,6 +9,8 @@ Created on Tue Oct  4 20:27:02 2022
 import spiceypy as sp
 
 
+SAVE_HTML = False
+
 #SPICE constants
 SPICE_FORMATSTR = "C"
 SPICE_PRECISION = 3
@@ -46,7 +48,8 @@ PRECOOLING_DURATION = 600.
 
 WHEEL_ROTATION_SPEED = 60.0 #degrees per second
 FILTER_WHEEL_LAYOUT = ["2v", "2h", "2", "dk", "4", "4h", "1", "3"]
-ANGLE_BETWEEN_FILTERS = 360. / len(FILTER_WHEEL_LAYOUT)
+N_FILTERS = len(FILTER_WHEEL_LAYOUT)
+ANGLE_BETWEEN_FILTERS = 360. / N_FILTERS
 
 
 

@@ -63,7 +63,7 @@ def spectral_calibration(self, band):
 
     #centre wavelengths on each pixel (real detector)
     self.px_illuminated_ixs = np.where((self.detector_px_centres >= band_um_range[0]) & (self.detector_px_centres <= band_um_range[1])) #indices of illuminated pixels
-    self.px_um = self.detector_px_centres[self.px_illuminated_ixs] #real detector wavelengths
+    self.px_um = self.detector_px_centres[self.px_illuminated_ixs] + self.spectral_shift #real detector wavelengths
     # print("Band", band, "pixels used:", len(bands[band]["detector_ums"]))
         
-    return self
+    # return self

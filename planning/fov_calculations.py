@@ -19,14 +19,14 @@ from tools.general.progress import progress
 
 #load spice kernels
 orbit_name = "EnVision_ESC_T2_2032_SouthVOI"
-orbit_name = "EnVision_HEO_T2_2032_NorthVOI"
+# orbit_name = "EnVision_HEO_T2_2032_NorthVOI"
 orbit_dict = load_spice_kernels("%s.bsp" %orbit_name)
 
 
 #get integration time depending on observation type
 obs_settings = {
     "dayside":{"integration_time":1.0},
-    "nightside":{"integration_time":13.},
+    "nightside":{"integration_time":13.47},
     }
 
 
@@ -44,12 +44,12 @@ print("SPICE calculations")
 
 #get science phase start/end ephemeris times
 dt_start = orbit_dict["science_start"]
-dt_end = dt_start + timedelta(days=70)
+dt_end = dt_start + timedelta(days=112)
 et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
 et_end = sp.utc2et(datetime.strftime(dt_end, SPICE_DATETIME_FMT))
 
 #make list of ephemeris times        
-ets = np.arange(et_start, et_end, 120.0) #one value per X seconds
+ets = np.arange(et_start, et_end, 300.0) #one value per X seconds
 
 #make strings
 dts = [sp.et2utc(et, "C", 0) for et in ets]
@@ -77,11 +77,16 @@ lats = np.asfarray(lats_rad) * sp.dpr()
 obs2venus_spkezrs = [sp.spkezr("VENUS", et, "IAU_VENUS", SPICE_ABCORR, observer) for et in ets]
 
 #height of observer above Mars centre
-altitudes = [sp.vnorm(spkezr[0][0:3]) for spkezr in obs2venus_spkezrs] - venus_radius
+altitudes = np.array([sp.vnorm(spkezr[0][0:3]) for spkezr in obs2venus_spkezrs] - venus_radius)
 
-#velocities
-speeds = [sp.vnorm(spkezr[0][3:6]) for spkezr in obs2venus_spkezrs]
+#spacecraft velocities
+speeds = np.array([sp.vnorm(spkezr[0][3:6]) for spkezr in obs2venus_spkezrs])
 
+#surface speeds
+circum_venus = 2.0 * np.pi * (venus_radius)
+circum_orbit = 2.0 * np.pi * (venus_radius + altitudes)
+
+surf_speeds = speeds * circum_venus / circum_orbit
 
 #incidence angles
 surf_ilumin = [sp.ilumin(SPICE_SHAPE_MODEL_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, observer, subpnt_xyz) for et, subpnt_xyz in zip(ets, subpnts_xyz)]
@@ -89,10 +94,10 @@ incidence_angles = [ilumin[3] * sp.dpr() for ilumin in surf_ilumin]
 
 
 #write to file
-write_log("Time\tObservation Type\tLongitude\tLatitude\tAltitude\tSpeed\tSurface FOV across-track\tSurface FOV along-track\tSurface FOV along-track error\tSurface FOV along-track with error", "%s_fovs.txt" %orbit_name)
-
+write_log("Time\tObservation Type\tLongitude\tLatitude\tAltitude\tSpeed\tSurface Speed\tSurface FOV across-track\tSurface FOV along-track\tSurface FOV along-track error\tSurface FOV along-track with error", "%s_fovs.txt" %orbit_name)
 
 max_values = {"fov along":0, "fov+error along":0, "error along":0}
+lines = []
 for i in progress(range(n_points)):
     
     
@@ -102,7 +107,7 @@ for i in progress(range(n_points)):
         obs_type = "nightside"
     
     obs_params = obs_settings[obs_type]
-    distance = speeds[i] * obs_params["integration_time"]
+    distance = surf_speeds[i] * obs_params["integration_time"]
 
     angular_error_over_it = angular_error * obs_params["integration_time"] / 14.4 #ratio of error to 14.4s as defined as the RPE
     
@@ -113,12 +118,11 @@ for i in progress(range(n_points)):
     fov = ifov + distance
    
     #write to file
-    line = "%s\t%s\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f" \
-        %(dts[i], obs_type, lons[i], lats[i], altitudes[i], speeds[i], ifov[0], fov[1], fov_error, fov[1]+fov_error)
+    line = "%s\t%s\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f" \
+        %(dts[i], obs_type, lons[i], lats[i], altitudes[i], speeds[i], surf_speeds[i], ifov[0], fov[1], fov_error, fov[1]+fov_error)
         
     
-    
-    write_log(line, "%s_fovs.txt" %orbit_name)
+    lines.append(line)
 
     if fov[1] > max_values["fov along"]:
         max_values["fov along"] = fov[1]
@@ -126,8 +130,14 @@ for i in progress(range(n_points)):
         max_values["fov+error along"] = fov[1]+fov_error
     if fov_error > max_values["error along"]:
         max_values["error along"] = fov_error
+
+
+print("Writing to file")
+for line in lines:
+    write_log(line, "%s_fovs.txt" %orbit_name)
         
       
 print(orbit_name)
+print("Max values:")
 for key in max_values:
     print(key, ":", max_values[key])
