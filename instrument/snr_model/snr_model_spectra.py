@@ -178,7 +178,7 @@ ils_gaussian_width = 3.0 #3-sigma = 99.7% of the radiance included in the ILS. L
 
 
 # when the pixel wavelengths have been calculated, shift each wavelength by this amount
-spectral_shift = 0.01 #um shift from the nominal wavelength assignment
+spectral_shift = 0.0 #um shift from the nominal wavelength assignment
 
 
 
@@ -246,7 +246,8 @@ class snr_model_calc(object):
     
             spectral_calibration(self, band)
             
-            venus(self, band, daynight)
+            # venus(self, band, daynight)
+            venus(self, band, daynight, plot_ils=True)
 
             detector_settings(self, band, daynight)
             detector(self)
@@ -426,33 +427,33 @@ plot_output = False
 save_output = False
 
 shift = 0.0001063522949549256 #band 1 spectral sampling
+real_resolving_power = 11000.
 
 with PdfPages("spectral_shift.pdf") as pdf: #open pdf
 
 
     for i, spectral_shift_scalar in enumerate(np.arange(10.0) /10.0):
     
-        plt.figure(figsize=(10, 5), constrained_layout=True)
+        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
         spectral_shift = shift * spectral_shift_scalar
         
         
         snr = snr_model_calc(bands)
         load_asimut_spectra_cm1(snr)
-        plt.plot(snr.night_cm1, snr.night_Wcm2cm1, label="High resolution input spectrum")
+        ax.plot(snr.night_cm1, snr.night_Wcm2cm1, label="High resolution input spectrum")
     
         venus_cm1, venus_wcm2cm1, _, _ = convert_units_add_noise(snr.px_um, snr.venus_wm2um, snr.signal["snr"])
-        plt.plot(venus_cm1, venus_wcm2cm1)
+        ax.plot(venus_cm1, venus_wcm2cm1)
     
         # plt.legend()            
-        plt.grid()
-        plt.yscale("log")
-        plt.xlim((venus_cm1[0]-1, venus_cm1[-1]+1))
+        ax.grid()
+        ax.set_yscale("log")
+        ax.set_xlim((venus_cm1[0]-1, venus_cm1[-1]+1))
         # plt.ylim((np.min(venus_wcm2cm1[0])/1e3, np.max(venus_wcm2cm1[-1]*1e3)))
-        plt.ylim((np.min(venus_wcm2cm1)/2, np.max(venus_wcm2cm1)*2))
-        plt.xlabel("Wavenumber cm-1")
-        plt.ylabel("Radiance W/cm2/sr/cm-1")
-        plt.title("Band %s %s\nPixel centre wavelengths shifted by %0.06fum" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], spectral_shift))
-    # plt.savefig("spectral_shift_%s_%s.png" %(snr.band, {"d":"day", "n":"night"}[snr.daynight]))
+        ax.set_ylim((np.min(venus_wcm2cm1)/2, np.max(venus_wcm2cm1)*2))
+        ax.set_xlabel("Wavenumber cm-1")
+        ax.set_ylabel("Radiance W/cm2/sr/cm-1")
+        ax.set_title("Band %s %s\nPixel centre wavelengths shifted by %0.06fum" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], spectral_shift))
 
-        pdf.savefig()
-        plt.close()
+        pdf.savefig(fig)
+        plt.close(fig)

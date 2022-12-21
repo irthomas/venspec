@@ -6,14 +6,14 @@ Created on Mon Sep  5 11:27:12 2022
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from snr_functions import F_omegaA, F_signal_det, F_thermal_background, F_adc
 from snr_ils import detector_ils
 
 
 
-def venus(self, band, daynight):
+def venus(self, band, daynight, plot_ils=False):
     #venus signal
 
     
@@ -23,7 +23,7 @@ def venus(self, band, daynight):
             
             #perform pixel ILS convolution
             if self.ils_convolution:
-                venus_wm2um = detector_ils(self.px_um, self.real_px_delta_lambda_um, self.ils_gaussian_width, self.day_um, self.day_Wm2um)
+                venus_wm2um = detector_ils(self.px_um, self.real_px_delta_lambda_um, self.ils_gaussian_width, self.day_um, self.day_Wm2um, plot_ils=plot_ils)
             else:
                 venus_wm2um = np.interp(self.px_um, self.day_um, self.day_Wm2um) #interpolate venus radiance to pixel wavelengths
 
@@ -45,7 +45,7 @@ def venus(self, band, daynight):
         if self.night_input_filepath != "":
             
             if self.ils_convolution:
-                venus_wm2um = detector_ils(self.px_um, self.real_px_delta_lambda_um, self.ils_gaussian_width, self.night_um, self.night_Wm2um)
+                venus_wm2um = detector_ils(self.px_um, self.real_px_delta_lambda_um, self.ils_gaussian_width, self.night_um, self.night_Wm2um, plot_ils=plot_ils)
             else:
                 venus_wm2um = np.interp(self.px_um, self.night_um, self.night_Wm2um) #interpolate venus radiance to pixel wavelengths
                 

@@ -47,35 +47,49 @@ def load_spice_kernels(scenario):
         ]
     
     orbit_d ={
-        "EnVision_ALT_T1_2032_NorthVOI.bsp":{
-            "title":"ALT_T1_2032_NorthVOI (2022/01/18)\nAlternative backup scenario with Venus Orbit Insertion over the Northern hemisphere",
-            "science_start":datetime(2034, 12, 20),
-            "science_end":datetime(2038, 12, 18),
-            "spice_observer":"-999", #error in kernel production => should be -668
-            },
-        "EnVision_ALT_T4_2032_SouthVOI.bsp":{
-            "title":"ALT_T4_2032_SouthVOI (2022/01/18)\nAlternative baseline scenario with Venus Orbit Insertion over the Southern hemisphere",
-            "science_start":datetime(2035, 3, 27),
-            "science_end":datetime(2039, 3, 25),
-            "spice_observer":"-999", #error in kernel production => should be -668
-            },
-        "EnVision_ESC_T4_2032_NorthVOI.bsp":{
-            "title":"ESC_T4_2032_NorthVOI (2020/06/10)\nLaunch into direct escape at -5.0 deg declination and Venus Orbit Insertion over the Northern hemisphere.",
-            "science_start":datetime(2035, 6, 15),
-            # "science_end":datetime(2035, 9, 14),
-            "science_end":datetime(2039, 6, 14),
+        # "EnVision_ALT_T1_2032_NorthVOI.bsp":{
+        #     "title":"ALT_T1_2032_NorthVOI (2022/01/18)\nAlternative backup scenario with Venus Orbit Insertion over the Northern hemisphere",
+        #     "science_start":datetime(2034, 12, 20),
+        #     "science_end":datetime(2038, 12, 18),
+        #     "spice_observer":"-999", #error in kernel production => should be -668
+        #     },
+        # "EnVision_ALT_T4_2032_SouthVOI.bsp":{
+        #     "title":"ALT_T4_2032_SouthVOI (2022/01/18)\nAlternative baseline scenario with Venus Orbit Insertion over the Southern hemisphere",
+        #     "science_start":datetime(2035, 3, 27),
+        #     "science_end":datetime(2039, 3, 25),
+        #     "spice_observer":"-999", #error in kernel production => should be -668
+        #     },
+        # "EnVision_ESC_T4_2032_NorthVOI.bsp":{
+        #     "title":"ESC_T4_2032_NorthVOI (2020/06/10)\nLaunch into direct escape at -5.0 deg declination and Venus Orbit Insertion over the Northern hemisphere.",
+        #     "science_start":datetime(2035, 6, 15),
+        #     # "science_end":datetime(2035, 9, 14),
+        #     "science_end":datetime(2039, 6, 14),
+        #     "spice_observer":"-668",
+        #     },
+        # "EnVision_ESC_T2_2032_SouthVOI.bsp":{
+        #     "title":"ESC_T2_2032_SouthVOI (2019/07/26)\nLaunch into direct escape at -3.0 deg declination and Venus Orbit Insertion over the Southern hemisphere",
+        #     "science_start":datetime(2034, 11, 26),
+        #     "science_end":datetime(2040, 3, 24),
+        #     "spice_observer":"-668",
+        #     },
+        # "EnVision_HEO_T2_2032_NorthVOI.bsp":{
+        #     "title":"HEO_T2_2032_NorthVOI (2019/07/26)\nLaunch into HEO (310x100,000 km) and Venus Orbit Insertion over the Northern hemisphere",
+        #     "science_start":datetime(2034, 11, 26),
+        #     "science_end":datetime(2040, 3, 24),
+        #     "spice_observer":"-668",
+        #     },
+
+        #DEC 2022 UPDATES
+        "EnVision_ET1_2031_NorthVOI.bsp":{
+            "title":"EnVision_ET1_2031_NorthVOI (baseline launch, 1st November 2031)",
+            "science_start":datetime(2035, 3, 17),
+            "science_end":datetime(2039, 3, 16),
             "spice_observer":"-668",
             },
-        "EnVision_ESC_T2_2032_SouthVOI.bsp":{
-            "title":"ESC_T2_2032_SouthVOI (2019/07/26)\nLaunch into direct escape at -3.0 deg declination and Venus Orbit Insertion over the Southern hemisphere",
-            "science_start":datetime(2034, 11, 26),
-            "science_end":datetime(2040, 3, 24),
-            "spice_observer":"-668",
-            },
-        "EnVision_HEO_T2_2032_NorthVOI.bsp":{
-            "title":"HEO_T2_2032_NorthVOI (2019/07/26)\nLaunch into HEO (310x100,000 km) and Venus Orbit Insertion over the Northern hemisphere",
-            "science_start":datetime(2034, 11, 26),
-            "science_end":datetime(2040, 3, 24),
+        "EnVision_T1_2032_NorthVOI.bsp":{
+            "title":"T1_2032_NorthVOI (backup launch, 20th November 2032)",
+            "science_start":datetime(2035, 2, 17),
+            "science_end":datetime(2039, 2, 16),
             "spice_observer":"-668",
             },
         }
