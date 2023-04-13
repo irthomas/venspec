@@ -8,8 +8,8 @@ Created on Tue Oct  4 20:33:05 2022
 
 
 filter_parameters = {
-    # ("1", "n"):{"integration_time":13.5, "colour":"red"},
-    ("1", "n"):{"integration_time":27., "colour":"red"},
+    ("1", "n"):{"integration_time":13.5, "colour":"red"},
+    # ("1", "n"):{"integration_time":27., "colour":"red"},
     ("2", "d"):{"integration_time":0.982, "colour":"blue"},
     ("2h", "d"):{"integration_time":0.982, "colour":"deepskyblue"},
     ("2v", "d"):{"integration_time":0.982, "colour":"lightskyblue"},

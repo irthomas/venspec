@@ -19,7 +19,7 @@ paths = {}
 
 if SYSTEM == "Linux": #linux system
     paths["BASE_DIRECTORY"] = os.path.normcase(r"/home/iant/linux/Python")
-
+    
 
 elif os.path.exists(os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python")): #outside BIRA
 
