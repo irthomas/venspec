@@ -5,6 +5,7 @@ __pycache__/
 
 output/
 reference_files/
+repos/
 
 # C extensions
 *.so

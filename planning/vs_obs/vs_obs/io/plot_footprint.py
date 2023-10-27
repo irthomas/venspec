@@ -27,7 +27,7 @@ def plot_footprint(orbit_plan):
     #plot venus map
     venus_topo = get_venus_magellan_data()
     plt.figure(figsize=(10, 6), constrained_layout=False)
-    plt.imshow(venus_topo, extent=(-180, 180, -90, 90), interpolation="bilinear", cmap=cmap, aspect=1)
+    plt.imshow(venus_topo, extent=(-180, 180, -90, 90), interpolation="bilinear", cmap=cmap, aspect=1, alpha=0.5)
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
     
@@ -36,6 +36,8 @@ def plot_footprint(orbit_plan):
     
     colours = []
     for orbit in orbit_plan:
+        
+        #plot if science
         if orbit[1]["status"] == "science":
     
             filter_ = orbit[1]["filter"]
@@ -44,7 +46,30 @@ def plot_footprint(orbit_plan):
             
             footprint = orbit[1]["footprint"]
             
+            #don't plot if longitude wraps from one side of plot to the other
             if np.max(footprint[:, 0]) - np.min(footprint[:, 0]) < 100:
+                
+                #code to show legend label just once
+                if colour not in colours:
+                    label = "Filter %s" %filter_
+                    colours.append(colour)
+                else:
+                    label = ""
+                plt.plot(footprint[:, 0], footprint[:, 1], color=colour, label=label)
+
+        #plot if dark (optional)
+        if orbit[1]["status"] == "dark":
+    
+            filter_ = "dk"
+            daynight = orbit[1]["daynight"]
+            colour = filter_parameters[(filter_, daynight)]["colour"]
+            
+            footprint = orbit[1]["footprint"]
+            
+            #don't plot if longitude wraps from one side of plot to the other
+            if np.max(footprint[:, 0]) - np.min(footprint[:, 0]) < 100:
+                
+                #code to show legend label just once
                 if colour not in colours:
                     label = "Filter %s" %filter_
                     colours.append(colour)

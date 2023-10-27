@@ -125,13 +125,14 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 footprint[4, :] = lonlats_s[1, :]
         
                 
-                if "dk" not in filter_name:
-                    orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"science", \
-                                                   "semiorbit":obs_ix, "alt":alt, "filter":filter_name, \
-                                                   "footprint_s":lonlats_s, "footprint_e":lonlats_e, \
-                                                   "footprint":footprint}])
-                else:
-                    orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"dark"}])
+                #save footprint even if dark
+                # if "dk" not in filter_name:
+                orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"science", \
+                                               "semiorbit":obs_ix, "alt":alt, "filter":filter_name, \
+                                               "footprint_s":lonlats_s, "footprint_e":lonlats_e, \
+                                               "footprint":footprint}])
+                # else:
+                #     orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"dark"}])
             
             
             
@@ -216,13 +217,14 @@ def make_orbit_plan(utc_start_time, fov_vectors):
                 footprint[4, :] = lonlats_s[1, :]
 
 
-                if "dk" not in filter_name:
-                    orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"science", \
-                                                   "semiorbit":obs_ix, "alt":alt, "filter":filter_name, \
-                                                   "footprint_s":lonlats_s, "footprint_e":lonlats_e, \
-                                                   "footprint":footprint}])
-                else:
-                    orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"dark"}])
+                #save footprint even if dark
+                # if "dk" not in filter_name:
+                orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"science", \
+                                               "semiorbit":obs_ix, "alt":alt, "filter":filter_name, \
+                                               "footprint_s":lonlats_s, "footprint_e":lonlats_e, \
+                                               "footprint":footprint}])
+                # else:
+                #     orbit_plan.append([et2dt(et), {"daynight":daynight, "status":"dark"}])
             
         
         

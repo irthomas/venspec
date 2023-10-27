@@ -28,6 +28,7 @@ def load_spice_kernels():
         "lsk/naif0012.tls",
         "pck/pck00010.tpc",
         "pck/de-403-masses.tpc",
+        "sclk/envision_200715_fict.tsc",
         "spk/de432s.bsp",
         ]
     
@@ -41,7 +42,7 @@ def load_spice_kernels():
     #     }
     
     
-    kernel_name = "EnVision_ESC_T2_2032_SouthVOI.bsp"
+    kernel_name = "EnVision_ET1_2031_NorthVOI.bsp" #baseline launch
     # spice_observer = orbit_d[kernel_name]["spice_observer"]
     
     print("KERNEL_DIRECTORY=%s, METAKERNEL_NAME=%s" %(kernel_root_dir, kernel_name))

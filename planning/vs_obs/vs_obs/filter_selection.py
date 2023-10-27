@@ -8,19 +8,19 @@ Created on Tue Oct  4 20:33:05 2022
 
 
 filter_parameters = {
-    ("1", "n"):{"integration_time":13.5, "colour":"red"},
+    ("1", "n"):{"integration_time":14.29, "colour":"red"},
     # ("1", "n"):{"integration_time":27., "colour":"red"},
-    ("2", "d"):{"integration_time":0.982, "colour":"blue"},
-    ("2h", "d"):{"integration_time":0.982, "colour":"deepskyblue"},
-    ("2v", "d"):{"integration_time":0.982, "colour":"lightskyblue"},
-    ("2", "n"):{"integration_time":13.5, "colour":"blue"},
-    ("3", "n"):{"integration_time":13.5, "colour":"yellow"},
-    ("4", "d"):{"integration_time":0.370, "colour":"green"},
-    ("4h", "d"):{"integration_time":0.370, "colour":"lime"},
+    ("2", "d"):{"integration_time":1.2, "colour":"blue"},
+    ("2h", "d"):{"integration_time":1.2, "colour":"deepskyblue"},
+    ("2v", "d"):{"integration_time":1.2, "colour":"lightskyblue"},
+    ("2", "n"):{"integration_time":14.29, "colour":"blue"},
+    ("3", "n"):{"integration_time":14.29, "colour":"yellow"},
+    ("4", "d"):{"integration_time":0.44, "colour":"green"},
+    ("4h", "d"):{"integration_time":0.44, "colour":"lime"},
 
-    ("dk", "n"):{"integration_time":13.5},
-    ("dk2", "d"):{"integration_time":0.982},
-    ("dk4", "d"):{"integration_time":0.370},
+    ("dk", "n"):{"integration_time":14.29, "colour":"black"},
+    ("dk2", "d"):{"integration_time":1.2, "colour":"black"},
+    ("dk4", "d"):{"integration_time":0.44, "colour":"black"},
 }
 
 

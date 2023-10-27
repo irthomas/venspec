@@ -64,8 +64,8 @@ from input_spectra import load_asimut_spectra
 # night_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_EMlinelist_specR_030_nightside_SP1_FEN1_rad_forw.dat"
 
 # all bands high res - 27 Sep 2022
-day_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_HITRAN2020_FBord_125_dayside_specR_025_SP1_FEN1_radNC.dat"
-night_input_filepath = r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files\nominal_test2_LidortG_AER_Haus_fact050_contXS_3E8_fact2_HITRAN2020_FBord_125_nightside_specR_025_SP1_FEN1_radNC.dat"
+day_input_filepath = r"C:/Users/iant/Nextcloud/VenSpecH.Staging/VenSpecH.BIRA.Staging/SN (Science Note)/ENVIS-VS-VEH-SN-0017-iss0rev0+AER-DaySpectrum-20221116.dat"
+night_input_filepath = r"C:/Users/iant/Nextcloud/VenSpecH.Staging/VenSpecH.BIRA.Staging/SN (Science Note)/ENVIS-VS-VEH-SN-0016-iss0rev0+AER-NightSpectrum-20221116.dat"
 
 
 #use OIP max/mean/min radiance values from the report if filepaths are left blank
@@ -95,7 +95,8 @@ ils_convolution = True
 #band 2b SNRs are consistently 5-7% too small, probably due to the quantum efficiency figure that was approximated from OIP's study
 #If you set the scale_2b to True, it increases the Venus signal by 6% to get consistent results with the OIP model.
 #increase band 2b radiance by 6% to match OIP calculations?
-scale_2b = True
+# scale_2b = True
+scale_2b = False
 
 
 #the max integration time is calculated by the model to fill the detector to 80% of the full well, up to a maximum of 14.4 seconds
@@ -106,7 +107,7 @@ scale_2b = True
 
 
 #scale the Venus input radiance by a factor. 1.0 = no change; 0.1 = closest match of Sev output to previous studies
-input_radiance_scalar = 0.1
+input_radiance_scalar = 1.0
 
 
 #simulate blaze function: shape can be 'flat' or 'sinc2'
@@ -114,13 +115,16 @@ blaze_shape = "flat" #OIP SNR study used a flat grating efficiency
 # blaze_shape = "sinc2"
 
 #grating efficiency (at the peak of the blaze if not flat)
-blaze_peak = 0.9 #OIP SNR study assumed 90%
+# blaze_peak = 0.9 #OIP SNR study assumed 90%
 
 
 #transmittance of spectrometer sections
 #not including grating - see blaze_shape and blaze_peak above to set these values independently
-transmittance_cold_section = 0.516 #total transmittance of the spectrometer section without grating
-transmittance_complete = 0.41 #total transmittance of the instrument without grating
+# transmittance_cold_section = 0.516 #total transmittance of the spectrometer section without grating
+# transmittance_complete = 0.41 #total transmittance of the instrument without grating
+
+transmittance_band = {"1":0.339, "2a":0.328, "2b":0.313, "3":0.332, "4":0.306}
+transmittance_cold_section = 0.4 #now including the grating, but same for all bands
 
 
 
@@ -153,7 +157,7 @@ t_detector_window = 253. #detector window temperature (K)
 
 
 #dark current variations with temperature not implemented, but thermal background from detector is included
-t_detector = 130.  #detector and cold shield temperature (K)
+t_detector = 120.  #detector and cold shield temperature (K)
 
 
 #define resolving powers
@@ -161,11 +165,11 @@ theoretical_resolving_power = 11000. #this is the value for the order calculatio
 
 #in reality the instrument line shape (ILS) is reduced due to aberations etc. Use this value to calculate the pixel ILS
 # real_resolving_power = 8500. #8500 = general minimum from OIP optical design report
-real_resolving_power = 7000. #7000 = minimum for science
+real_resolving_power = 9000. #7000 = minimum for science
 
 
 # maximum allowed integration time based on the maximum allowed nightside footprint
-max_integration_time = 14.401 #seconds. 14.401 = value from OIP SNR report; results in groundtrack approx 105km
+max_integration_time = 14.3 #seconds. 14.401 = value from OIP SNR report; results in groundtrack approx 105km
 
 
 #ADC number of bits
@@ -174,7 +178,7 @@ number_of_bits = 14.
 
 #SNR model assumes that the instrument line shape (ILS) of each pixel is a Gaussian of width sigma (like NOMAD). TBD the best approximation
 #choose the width of the ILS (in values of sigma) i.e. calculate ILS for range (-ils_gaussian width * sigma) to (+ils_gaussian width * sigma)
-ils_gaussian_width = 3.0 #3-sigma = 99.7% of the radiance included in the ILS. Lower number = faster simulation
+ils_gaussian_width = 5.0 #3-sigma = 99.7% of the radiance included in the ILS. Lower number = faster simulation
 
 
 # when the pixel wavelengths have been calculated, shift each wavelength by this amount
@@ -204,7 +208,7 @@ class snr_model_calc(object):
         self.slit_width = 1. #pixels
         
         self.blaze_shape = blaze_shape
-        self.blaze_peak = blaze_peak
+        # self.blaze_peak = blaze_peak
         
         self.spectral_shift = spectral_shift
 
@@ -221,7 +225,8 @@ class snr_model_calc(object):
         self.max_integration_time = max_integration_time
         
         self.transmittance_cold_section = transmittance_cold_section
-        self.transmittance_complete = transmittance_complete
+        # self.transmittance_complete = transmittance_complete
+        self.transmittance_band = transmittance_band
         
         # self.det_window_tb_scalar = det_window_tb_scalar
         # self.cold_section_tb_scalar = cold_section_tb_scalar
@@ -246,8 +251,7 @@ class snr_model_calc(object):
     
             spectral_calibration(self, band)
             
-            # venus(self, band, daynight)
-            venus(self, band, daynight, plot_ils=True)
+            venus(self, band, daynight)
 
             detector_settings(self, band, daynight)
             detector(self)
@@ -284,7 +288,7 @@ class snr_model_calc(object):
 
 
 # run calculations for temperature given above
-# snr = snr_model_calc(bands)
+snr = snr_model_calc(bands)
 
 
 #run for different cold section temperatures OIP model
@@ -416,44 +420,44 @@ class snr_model_calc(object):
 
 # plot HR input spectrum and convolve output for various RPs
 # choose 1 band only
-from input_spectra import load_asimut_spectra_cm1
-from save_output_ASIMUT import convert_units_add_noise
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+# from input_spectra import load_asimut_spectra_cm1
+# from save_output_ASIMUT import convert_units_add_noise
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_pdf import PdfPages
 
-input_radiance_scalar = 0.1
+# input_radiance_scalar = 0.1
 
-plot_output = False
-save_output = False
+# plot_output = False
+# save_output = False
 
-shift = 0.0001063522949549256 #band 1 spectral sampling
-real_resolving_power = 11000.
+# shift = 0.0001063522949549256 #band 1 spectral sampling
+# real_resolving_power = 11000.
 
-with PdfPages("spectral_shift.pdf") as pdf: #open pdf
+# with PdfPages("spectral_shift.pdf") as pdf: #open pdf
 
 
-    for i, spectral_shift_scalar in enumerate(np.arange(10.0) /10.0):
+#     for i, spectral_shift_scalar in enumerate(np.arange(10.0) /10.0):
     
-        fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
-        spectral_shift = shift * spectral_shift_scalar
+#         fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
+#         spectral_shift = shift * spectral_shift_scalar
         
         
-        snr = snr_model_calc(bands)
-        load_asimut_spectra_cm1(snr)
-        ax.plot(snr.night_cm1, snr.night_Wcm2cm1, label="High resolution input spectrum")
+#         snr = snr_model_calc(bands)
+#         load_asimut_spectra_cm1(snr)
+#         ax.plot(snr.night_cm1, snr.night_Wcm2cm1, label="High resolution input spectrum")
     
-        venus_cm1, venus_wcm2cm1, _, _ = convert_units_add_noise(snr.px_um, snr.venus_wm2um, snr.signal["snr"])
-        ax.plot(venus_cm1, venus_wcm2cm1)
+#         venus_cm1, venus_wcm2cm1, _, _ = convert_units_add_noise(snr.px_um, snr.venus_wm2um, snr.signal["snr"])
+#         ax.plot(venus_cm1, venus_wcm2cm1)
     
-        # plt.legend()            
-        ax.grid()
-        ax.set_yscale("log")
-        ax.set_xlim((venus_cm1[0]-1, venus_cm1[-1]+1))
-        # plt.ylim((np.min(venus_wcm2cm1[0])/1e3, np.max(venus_wcm2cm1[-1]*1e3)))
-        ax.set_ylim((np.min(venus_wcm2cm1)/2, np.max(venus_wcm2cm1)*2))
-        ax.set_xlabel("Wavenumber cm-1")
-        ax.set_ylabel("Radiance W/cm2/sr/cm-1")
-        ax.set_title("Band %s %s\nPixel centre wavelengths shifted by %0.06fum" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], spectral_shift))
+#         # plt.legend()            
+#         ax.grid()
+#         ax.set_yscale("log")
+#         ax.set_xlim((venus_cm1[0]-1, venus_cm1[-1]+1))
+#         # plt.ylim((np.min(venus_wcm2cm1[0])/1e3, np.max(venus_wcm2cm1[-1]*1e3)))
+#         ax.set_ylim((np.min(venus_wcm2cm1)/2, np.max(venus_wcm2cm1)*2))
+#         ax.set_xlabel("Wavenumber cm-1")
+#         ax.set_ylabel("Radiance W/cm2/sr/cm-1")
+#         ax.set_title("Band %s %s\nPixel centre wavelengths shifted by %0.06fum" %(snr.band, {"d":"day", "n":"night"}[snr.daynight], spectral_shift))
 
-        pdf.savefig(fig)
-        plt.close(fig)
+#         pdf.savefig(fig)
+#         plt.close(fig)

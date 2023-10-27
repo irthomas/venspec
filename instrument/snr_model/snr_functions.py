@@ -22,7 +22,6 @@ def F_planck(nu_m, T): #W/m2/sr/m
 
 
 def F_signal_det(px_Wm2m, px_m, px_fwhm_m, trans, omegaA, qe):
-    
     signal = px_Wm2m * px_m * px_fwhm_m * trans * omegaA * qe / (spc.c * spc.h)
     
     return signal
@@ -40,10 +39,15 @@ def F_thermal_background(planck, qe, omega, px_area_m, nu_m, emis, trans):
 
 
 
-def F_adc(signal, dc, tb, it, n_bits):
+# def F_adc(signal, dc, tb, it, n_bits):
+#     #set signal = 0 for dark frames
+#     adc = ((signal + dc + tb) * it) / (np.sqrt(12.) * 2.**n_bits)
+    # return adc
+
+def F_adc(full_well, n_bits):
     #set signal = 0 for dark frames
     
-    adc = ((signal + dc + tb) * it) / (np.sqrt(12.) * 2.**n_bits)
+    adc = full_well / (np.sqrt(12.) * 2.**n_bits)
     
     return adc
     

@@ -94,7 +94,7 @@ def detector_ils(lambda_ums, delta_lambda_um, ils_gaussian_width, venus_um_grid,
 # first run snr_model.py to get the snr object, then run this script to plot the ILS
 # if __name__ == "__main__":
 #     lambda_ums = snr.px_um
-#     delta_lambda_um = snr.px_delta_lambda_um
+#     delta_lambda_um = snr.real_px_delta_lambda_um
 #     # delta_lambda_um = snr.real_px_delta_lambda_um
 #     ils_gaussian_width = snr.ils_gaussian_width
 
@@ -104,9 +104,11 @@ def detector_ils(lambda_ums, delta_lambda_um, ils_gaussian_width, venus_um_grid,
     
     
 #     fig, ax = plt.subplots()
-#     ax.set_ylabel("Gaussian ILS")
+#     ax.set_ylabel("Gaussian ISRF for a resolving power of %i" %snr.real_resolving_power)
 #     ax.set_xlabel("Wavelength (um)")
-#     ax.set_title("Detector pixel ILS")
+#     ax.set_title("Detector pixel ISRF")
+    
+#     spectrum_convolved = np.zeros_like(lambda_ums)
     
 #     for px_ix, lambda_um in enumerate(lambda_ums):
     
@@ -128,6 +130,18 @@ def detector_ils(lambda_ums, delta_lambda_um, ils_gaussian_width, venus_um_grid,
 #         ils_venus_signal = px_venus_signal * ils_gauss
         
 #         px_venus_convolved = np.sum(ils_venus_signal) / np.sum(ils_gauss)
+        
+#         spectrum_convolved[px_ix] = px_venus_convolved
     
-#         ax.plot(px_grid + lambda_um, ils_gauss)
+#         ax.plot(px_grid + lambda_um, ils_gauss, color={0:"k", 1:"grey"}[np.mod(px_ix, 2)])
     
+#     plt.figure()
+#     plt.plot(venus_um_grid, venus_radiance, label="High spectral resolution simulation")
+#     plt.plot(lambda_ums, spectrum_convolved, label="Spectrum convolved to ISRF")
+#     plt.xlabel("Wavelength (um)")
+#     plt.ylabel("Venus radiance")
+#     plt.title("Venus spectra before and after instrument convolution")
+#     plt.xlim((lambda_ums[0]-0.001, lambda_ums[-1]+0.001))
+#     plt.ylim((0, max(spectrum_convolved)+0.01))
+#     plt.legend()
+#     plt.grid()

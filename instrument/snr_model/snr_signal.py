@@ -33,11 +33,16 @@ def venus(self, band, daynight, plot_ils=False):
             #if no filename given, manually select OIP radiances
             #set wavelength to mean 3 values of the diffraction order
             px_length = len(self.px_um)
-            self.px_um = self.px_um[int(px_length/2)-1:int(px_length/2)+2]
-            self.venus_wm2um = np.zeros(3)
-            self.venus_wm2um[2] = {"2a":23, "2b":18, "4":176}[band]
-            self.venus_wm2um[1] = {"2a":21, "2b":17, "4":165}[band]
-            self.venus_wm2um[0] = {"2a":11, "2b":13, "4":126}[band]
+            self.px_um = self.px_um[int(px_length/2)-1:int(px_length/2)+1]
+            # self.venus_wm2um = np.zeros(3)
+            # self.venus_wm2um[2] = {"2a":23, "2b":18, "4":176}[band]
+            # self.venus_wm2um[1] = {"2a":21, "2b":17, "4":165}[band]
+            # self.venus_wm2um[0] = {"2a":11, "2b":13, "4":126}[band]
+
+            #June 2023
+            self.venus_wm2um = np.zeros(2)
+            self.venus_wm2um[1] = {"2a":1.82E+01, "2b":1.26E+01, "4":1.56E+02}[band]
+            self.venus_wm2um[0] = {"2a":1.58E+01, "2b":1.11E+01, "4":1.44E+02}[band]
 
 
 
@@ -55,11 +60,16 @@ def venus(self, band, daynight, plot_ils=False):
             #if no filename given, manually select OIP radiances
             #set wavelength to mean 3 values of the diffraction order
             px_length = len(self.px_um)
-            self.px_um = self.px_um[int(px_length/2)-1:int(px_length/2)+2]
-            self.venus_wm2um = np.zeros(3)
-            self.venus_wm2um[2] = {"1":0.1051, "2a":0.1507, "2b":0.0451, "3":0.2635}[band]
-            self.venus_wm2um[1] = {"1":0.0314, "2a":0.0702, "2b":0.0252, "3":0.0667}[band]
-            self.venus_wm2um[0] = {"1":0.0022, "2a":0.0298, "2b":0.0099, "3":0.0133}[band]
+            self.px_um = self.px_um[int(px_length/2)-1:int(px_length/2)+1]
+            # self.venus_wm2um = np.zeros(3)
+            # self.venus_wm2um[2] = {"1":0.1051, "2a":0.1507, "2b":0.0451, "3":0.2635}[band]
+            # self.venus_wm2um[1] = {"1":0.0314, "2a":0.0702, "2b":0.0252, "3":0.0667}[band]
+            # self.venus_wm2um[0] = {"1":0.0022, "2a":0.0298, "2b":0.0099, "3":0.0133}[band]
+
+            #June 2023
+            self.venus_wm2um = np.zeros(2)
+            self.venus_wm2um[1] = {"1":3.73E-02, "2a":1.66E-01, "2b":1.71E-02, "3":2.68E-01}[band] #max
+            self.venus_wm2um[0] = {"1":1.87E-02, "2a":6.37E-02, "2b":1.37E-02, "3":1.13E-01}[band] #ref
 
 
     
@@ -96,8 +106,7 @@ def signal(self, band):
     signal = {}
     omegaA = F_omegaA(self.fno, self.detector_area_m2)
     
-    #apply blaze
-    self.transmittance_with_blaze = self.transmittance_complete * blaze_transmittance(self)
+    self.transmittance_complete = self.transmittance_band[band]
     # plt.figure()
     
     # fig, ax_new = plt.subplots()
@@ -106,7 +115,7 @@ def signal(self, band):
     # ax_new.plot(self.px_um, F_signal_det(self.venus_wm2um, self.px_um, self.px_delta_lambda_m, self.transmittance_complete, omegaA, self.qe_px))
     
     
-    signal["venus_es"] = F_signal_det(self.venus_wm2um, self.px_um, self.px_delta_lambda_m, self.transmittance_with_blaze, omegaA, self.qe_px)
+    signal["venus_es"] = F_signal_det(self.venus_wm2um, self.px_um, self.px_delta_lambda_m, self.transmittance_complete, omegaA, self.qe_px)
 
     signal["cold_shield_es"] = F_thermal_background(self.cold_shield["b_m"], self.qe_full_range, self.cold_shield["omega"], \
                      self.detector_area_m2, self.nu_full_range_m, self.cold_shield["emis"], self.cold_shield["trans"])
@@ -118,8 +127,8 @@ def signal(self, band):
 
 
     #fudge to make 2b signal work
-    if self.scale_2b and band == "2b":
-        signal["venus_es"] *= 1.06
+    # if self.scale_2b and band == "2b":
+    #     signal["venus_es"] *= 1.06
         
     
 
@@ -130,11 +139,13 @@ def signal(self, band):
     # signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] + signal["spectrometer_es"] + signal["warmsection_es"]
     
     #TO DO: do this calculation properly rather than analytically
-    det_window_tb_scalar = 0.32
-    cold_section_tb_scalar = 0.76
+    # det_window_tb_scalar = 0.32
+    # cold_section_tb_scalar = 0.76
     
-    signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] * det_window_tb_scalar +\
-        signal["spectrometer_es"] * cold_section_tb_scalar + signal["warmsection_es"]
+    # signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] * det_window_tb_scalar +\
+    #     signal["spectrometer_es"] * cold_section_tb_scalar + signal["warmsection_es"]
+    signal["tb_total_es"] = signal["cold_shield_es"] + signal["det_window_es"] +\
+        signal["spectrometer_es"] + signal["warmsection_es"]
 
 
 
@@ -143,7 +154,7 @@ def signal(self, band):
     optimum_it = calc_integration_time(self.full_well, total_signal_e_per_s)
     if optimum_it < self.integration_time:
         print("%s %s %iK: integration time too large: reducing from %0.2f to %0.2f" %(self.band, self.daynight, self.t_cold_section, self.integration_time, optimum_it))
-        print(self.band, self.daynight, "max signal:", total_signal_e_per_s, "from", np.max(signal["venus_es"]), self.detector_dc_es, signal["tb_total_es"])
+        # print(self.band, self.daynight, "max signal:", total_signal_e_per_s, "from", np.max(signal["venus_es"]), self.detector_dc_es, signal["tb_total_es"])
         self.integration_time = optimum_it
 
 
@@ -153,23 +164,28 @@ def signal(self, band):
     signal["tb_total_e"] = signal["tb_total_es"] * self.integration_time
     
     # """adc noise"""
-    signal["adc_venus"] = F_adc(signal["venus_es"], self.detector_dc_es, signal["tb_total_es"], self.integration_time, self.n_bits)
-    signal["adc_dark"] = F_adc(0.0, self.detector_dc_es, signal["tb_total_es"], self.integration_time, self.n_bits) #no signal on dark
+    # signal["adc_venus"] = F_adc(signal["venus_es"], self.detector_dc_es, signal["tb_total_es"], self.integration_time, self.n_bits)
+    # signal["adc_dark"] = F_adc(0.0, self.detector_dc_es, signal["tb_total_es"], self.integration_time, self.n_bits) #no signal on dark
     
+    signal["adc"] = F_adc(self.full_well, self.n_bits)
     
-    signal["venus_e"] = signal["venus_es"] * self.integration_time
-    signal["noise_e"] = np.sqrt(signal["venus_e"] + signal["adc_venus"]**2. + signal["adc_dark"]**2. + 2. * \
-              ((self.detector_dc_es + signal["tb_total_es"]) * self.integration_time + self.readout_noise**2 ))
-    
-    signal["snr"] = signal["venus_e"] / signal["noise_e"]
+    # signal["venus_e"] = signal["venus_es"] * self.integration_time
+    # signal["noise_e"] = np.sqrt(signal["venus_e"] + signal["adc_venus"]**2. + signal["adc_dark"]**2. + 2. * \
+    #           ((self.detector_dc_es + signal["tb_total_es"]) * self.integration_time + self.readout_noise**2 ))
+    # signal["snr"] = signal["venus_e"] / signal["noise_e"]
+
+    signal["snr"] = (signal["venus_es"] * self.integration_time) / \
+        np.sqrt((signal["venus_es"] + 2.0 * self.detector_dc_es + 2.0 * signal["tb_total_es"]) * self.integration_time + \
+                2.0 * self.readout_noise**2.0 + 2.0 * signal["adc"]**2.0)
+
     
     signal["snr_binned"] = signal["snr"] * np.sqrt(self.n_rows)
     
-    signal["S+TB+DC_e"] = signal["venus_e"] + signal["tb_total_e"] + self.detector_dc_e
-    signal["TB+DC_e"] = signal["tb_total_e"] + self.detector_dc_e
+    # signal["S+TB+DC_e"] = signal["venus_e"] + signal["tb_total_e"] + self.detector_dc_e
+    # signal["TB+DC_e"] = signal["tb_total_e"] + self.detector_dc_e
     
-    signal["S_LSB"] = signal["venus_e"] * 2**self.n_bits / self.full_well
-    signal["TB+DC_LSB"] = signal["TB+DC_e"] * 2**self.n_bits / self.full_well
+    # signal["S_LSB"] = signal["venus_e"] * 2**self.n_bits / self.full_well
+    # signal["TB+DC_LSB"] = signal["TB+DC_e"] * 2**self.n_bits / self.full_well
     
     self.signal = signal
 

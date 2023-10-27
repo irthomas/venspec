@@ -53,7 +53,7 @@ from vs_obs.io.plot_latitude_coverage import plot_latitude_coverage
 
 
 # utc_start_time = datetime(2034, 11, 26) #mission start approx
-utc_start_time = datetime(2035, 1, 1) #mission start approx
+utc_start_time = datetime(2035, 3, 18) #mission start approx
 # utc_start_time = datetime(2035, 5, 16) #max altitude 451km
 # utc_start_time = datetime(2035, 7, 20) #equatorial nightside max 395km
 # utc_start_time = datetime(2035, 7, 25) #equatorial nightside min 288km
@@ -72,15 +72,15 @@ end = time.time()
 print("Footprints plotted in %0.1fs" %(end - start))        
 
 
-daynight = "n"
-print("Making coverage grid")
-start = time.time()
-coverage_grids, lats_hr, lons_hr = make_coverage_grids(orbit_plan, daynight)
-end = time.time()
-print("Coverage grid made in %0.1fs" %(end - start))        
+# daynight = "n"
+# print("Making coverage grid")
+# start = time.time()
+# coverage_grids, lats_hr, lons_hr = make_coverage_grids(orbit_plan, daynight)
+# end = time.time()
+# print("Coverage grid made in %0.1fs" %(end - start))        
 
 # fig = plot_latitude_coverage(coverage_grids, lats_hr, lons_hr, "Filters 1, 2, 3 and dark")
-fig = plot_latitude_coverage(coverage_grids, lats_hr, lons_hr, "Filter 1, 1, 1 and dark on orbit 2")
+# fig = plot_latitude_coverage(coverage_grids, lats_hr, lons_hr, "Filter 1, 1, 1 and dark on orbit 2")
 # fig = plot_latitude_coverage(coverage_grids, lats_hr, lons_hr, "Filter 1, 1, 1 and dark on orbits 2 and 4")
 
 

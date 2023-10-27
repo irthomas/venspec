@@ -61,13 +61,13 @@ save_output = False
 
 #convolve high resolution spectrum to pixel ILS? If False, interpolate input spectrum to pixel central wavelength
 #if using OIP max/mean/min radiance values then set this to False
-# ils_convolution = False
-ils_convolution = True
+ils_convolution = False
+# ils_convolution = True
 
 #band 2b SNRs are consistently 5-7% too small, probably due to the quantum efficiency figure that was approximated from OIP's study
 #If you set the scale_2b to True, it increases the Venus signal by 6% to get consistent results with the OIP model.
 #increase band 2b radiance by 6% to match OIP calculations?
-scale_2b = True
+scale_2b = False
 
 
 #the max integration time is calculated by the model to fill the detector to 80% of the full well, up to a maximum of 14.4 seconds
@@ -77,7 +77,8 @@ scale_2b = True
 # auto = False
 
 
-#scale the Venus input radiance by a factor. 1.0 = no change; 0.1 = closest match to previous studies
+#scale the Venus input radiance by a factor
+#was 0.1 to match previous studies, now incorporated into the radiances so set to 1.0
 input_radiance_scalar = 1.0
 
 
@@ -86,15 +87,16 @@ blaze_shape = "flat" #OIP SNR study used a flat grating efficiency
 # blaze_shape = "sinc2"
 
 #grating efficiency (at the peak of the blaze if not flat)
-blaze_peak = 0.9 #OIP SNR study assumed 90%
+# blaze_peak = 0.55 #OIP Phase A SNR study assumed 90%
 
 
 #transmittance of spectrometer sections
 #not including grating - see blaze_shape and blaze_peak above to set these values independently
-transmittance_cold_section = 0.516 #total transmittance of the spectrometer section without grating
-transmittance_complete = 0.41 #total transmittance of the instrument without grating
+# transmittance_cold_section = 0.516 #total transmittance of the spectrometer section without grating
+# transmittance_complete = 0.41 #total transmittance of the instrument without grating
 
-
+transmittance_band = {"1":0.339, "2a":0.328, "2b":0.313, "3":0.332, "4":0.306}
+transmittance_cold_section = 0.4 #now including the grating, but same for all bands
 
 
 #run Venus and dark frames separately for subtraction on ground?
@@ -105,12 +107,12 @@ transmittance_complete = 0.41 #total transmittance of the instrument without gra
 #specify bands to analyse, dayside (d) and/or nightside (n)
 bands = [
     ["1", "n"],
-    ["2a", "d"],
-    ["2a", "n"],
-    ["2b", "d"],
-    ["2b", "n"],
-    ["3", "n"],
-    ["4", "d"],
+    # ["2a", "d"],
+    # ["2a", "n"],
+    # ["2b", "d"],
+    # ["2b", "n"],
+    # ["3", "n"],
+    # ["4", "d"],
 ]
 
 
@@ -125,7 +127,7 @@ t_detector_window = 253. #detector window temperature (K)
 
 
 #dark current variations with temperature not implemented, but thermal background from detector is included
-t_detector = 130.  #detector and cold shield temperature (K)
+t_detector = 120.  #detector and cold shield temperature (K)
 
 
 #define resolving powers
@@ -137,7 +139,7 @@ real_resolving_power = 7000. #7000 = minimum for science
 
 
 # maximum allowed integration time based on the maximum allowed nightside footprint
-max_integration_time = 14.401 #seconds. 14.401 = value from OIP SNR report; results in groundtrack approx 105km
+max_integration_time = 14.3 #seconds. 14.401 = value from OIP SNR report; results in groundtrack approx 105km
 
 
 #ADC number of bits
@@ -149,8 +151,8 @@ number_of_bits = 14.
 ils_gaussian_width = 3.0 #3-sigma = 99.7% of the radiance included in the ILS. Lower number = faster simulation
 
 
-# when the pixel wavelengths have been calculated, shift each wavelength by this amount
-spectral_shift = 0.01 #um shift from the nominal wavelength assignment
+# for testing only: when the pixel wavelengths have been calculated, shift each wavelength by this amount
+spectral_shift = 0.0 #0.01 #um shift from the nominal wavelength assignment
 
 
 
@@ -176,7 +178,7 @@ class snr_model_calc(object):
         self.slit_width = 1. #pixels
         
         self.blaze_shape = blaze_shape
-        self.blaze_peak = blaze_peak
+        # self.blaze_peak = blaze_peak
         
         self.spectral_shift = spectral_shift
 
@@ -193,7 +195,8 @@ class snr_model_calc(object):
         self.max_integration_time = max_integration_time
         
         self.transmittance_cold_section = transmittance_cold_section
-        self.transmittance_complete = transmittance_complete
+        # self.transmittance_complete = transmittance_complete
+        self.transmittance_band = transmittance_band
         
         # self.det_window_tb_scalar = det_window_tb_scalar
         # self.cold_section_tb_scalar = cold_section_tb_scalar
@@ -206,9 +209,9 @@ class snr_model_calc(object):
 
     
         #print OIP comparison results
-        if self.day_input_filepath == "" and self.night_input_filepath == "":
-            print("SNR 1 pixel values for comparison to the OIP SNR study report")
-            print("E.g. If t_cold_section=228 then values should be equal to VENSPEC-H-REP-OIP-003 v3_0 (SNR Analysis) table 4-6 page 52")
+        # if self.day_input_filepath == "" and self.night_input_filepath == "":
+        #     print("SNR 1 pixel values for comparison to the OIP SNR study report")
+        #     print("E.g. If t_cold_section=228 then values should be equal to VENSPEC-H-REP-OIP-003 v3_0 (SNR Analysis) table 4-6 page 52")
 
 
         for band_ix, (band, daynight) in enumerate(self.bands):
@@ -232,8 +235,11 @@ class snr_model_calc(object):
             signal(self, band)
             
             #print OIP comparison results
-            if len(self.signal["snr"]) == 3:
-                print("Band", band, {"d":"day", "n":"night"}[daynight], " - SNRs for 1 pixel: min R={:.2f}, mean R={:.2f}, max R=={:.2f}".format(*self.signal["snr"]))
+            # if len(self.signal["snr"]) == 3:
+            #     print("Band", band, {"d":"day", "n":"night"}[daynight], " - SNRs for 1 pixel: min R={:.2f}, mean R={:.2f}, max R=={:.2f}".format(*self.signal["snr"]))
+            if len(self.signal["snr"]) == 2:
+                print("Band", band, {"d":"day", "n":"night"}[daynight], " - SNRs for 1 pixel: ref R={:.2f}, max R={:.2f}".format(*self.signal["snr"]))
+                print("Band", band, {"d":"day", "n":"night"}[daynight], " - SNRs for all pixels: ref R={:.2f}, max R={:.2f}".format(*self.signal["snr_binned"]))
             else: #else print min/mean/max SNR of real spectrum for 1 pixel
                 print(band, daynight, "SNR 1 px:", np.min(self.signal["snr"]), np.mean(self.signal["snr"]), np.max(self.signal["snr"]))
             
