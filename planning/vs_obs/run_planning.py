@@ -53,10 +53,13 @@ from vs_obs.io.plot_latitude_coverage import plot_latitude_coverage
 
 
 # utc_start_time = datetime(2034, 11, 26) #mission start approx
-utc_start_time = datetime(2035, 3, 18) #mission start approx
-# utc_start_time = datetime(2035, 5, 16) #max altitude 451km
+# utc_start_time = datetime(2035, 3, 18) #mission start approx
+# utc_start_time = datetime(2035, 5, 16) #early max altitude 451km
 # utc_start_time = datetime(2035, 7, 20) #equatorial nightside max 395km
 # utc_start_time = datetime(2035, 7, 25) #equatorial nightside min 288km
+
+utc_start_time = datetime(2038, 12, 1) #towards mission end approx
+
 print("Ops start time", utc_start_time)
 
 print("Making orbit plan")
