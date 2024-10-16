@@ -17,32 +17,34 @@ def load_spice_kernels():
 
     # load each kernel manually
 
-    # kernels = [
-    #     "fk/envision_v00.tf",
-    #     "fk/envision_sc_venus_npo_v00.tf",
-    #     "envision_venspec_v01.ti", #nadir along track orientation
-    #     "lsk/naif0012.tls",
-    #     "pck/pck00010.tpc",
-    #     "pck/de-403-masses.tpc",
-    #     "sclk/envision_200715_fict.tsc",
-    #     "spk/de432s.bsp",
-    #     ]
+    kernels = [
+        'fk/envision_v02.tf',
+        'fk/estrack_v04.tf',
+        'fk/earth_topo_050714.tf',
+        'fk/earthfixeditrf93.tf',
 
-    # orbit_d ={
-    #     "EnVision_ESC_T2_2032_SouthVOI.bsp":{
-    #         "title":"ESC_T2_2032_SouthVOI (2019/07/26)\nLaunch into direct escape at -3.0 deg declination and Venus Orbit Insertion over the Southern hemisphere",
-    #         "science_start":datetime(2034, 11, 26),
-    #         "science_end":datetime(2040, 3, 24),
-    #         "spice_observer":"-668",
-    #         },
-    #     }
+        'ik/envision_venspec_v02.ti',
 
-    # kernel_name = "EnVision_ET1_2031_NorthVOI.bsp" #baseline launch
-    # spice_observer = orbit_d[kernel_name]["spice_observer"]
+        'lsk/naif0012.tls',
 
-    kernel_name = "envision_study_et1_north_voi_ml008_v050.tm"
+        'sclk/envision_200715_fict.tsc',
+
+        'pck/pck00010.tpc',
+        'pck/de-403-masses.tpc',
+        'pck/earth_200101_990628_predict.bpc',
+
+        'spk/de432s.bsp',
+        'spk/estrack_v04.bsp',
+        'spk/earthstns_itrf93_050714.bsp',
+        'spk/EnVision_ET1_2031_NorthVOI_ML008_v01.bsp',
+
+        'ck/EnVision_ET1_2031_NorthVOI_ML008_v01.bc',
+    ]
+
+    kernel_name = "envision_study_et1_north_voi_ml008_v051.tm"
     print("KERNEL_DIRECTORY=%s, METAKERNEL_NAME=%s" % (kernel_root_dir, kernel_name))
 
-    # for kernel in kernels:
-    #     sp.furnsh(os.path.join(kernel_root_dir, os.path.normcase(kernel)))
-    sp.furnsh(os.path.join(kernel_root_dir, "mk", kernel_name))
+    for kernel in kernels:
+        sp.furnsh(os.path.join(kernel_root_dir, os.path.normcase(kernel)))
+
+    # sp.furnsh(os.path.join(kernel_root_dir, "mk", kernel_name))

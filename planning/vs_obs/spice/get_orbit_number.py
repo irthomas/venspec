@@ -13,7 +13,7 @@ import os
 # import spiceypy as sp
 from datetime import datetime
 # import matplotlib.pyplot as plt
-from tools.file.paths import paths
+from planning.vs_obs.config.paths import paths
 from planning.vs_obs.spice.spice_functions import et2dt
 # from planning.vs_obs.spice.find_sza_crossings import get_corners_sza
 
