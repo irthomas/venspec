@@ -8,8 +8,7 @@ Created on Thu Oct 26 12:43:13 2023
 VENSPEC-H SZA AT THE EQUATOR
 """
 
-
-import os
+# import os
 import numpy as np
 import spiceypy as sp
 from datetime import datetime, timedelta
@@ -19,12 +18,12 @@ import matplotlib.pyplot as plt
 from tools.spice.load_spice_kernels import load_spice_kernels, SPICE_DATETIME_FMT, \
     SPICE_METHOD, SPICE_ABCORR, SPICE_SHAPE_MODEL_METHOD
 
-from tools.general.progress import progress
+# from tools.general.progress import progress
 from tools.general.get_nearest_index import get_nearest_index
 
-#load spice kernels
+# load spice kernels
 orbit_name = "EnVision_ET1_2031_NorthVOI"
-orbit_dict = load_spice_kernels("%s.bsp" %orbit_name)
+orbit_dict = load_spice_kernels("%s.bsp" % orbit_name)
 
 SPICE_OBSERVER = "-668"
 HALF_ORBIT_LENGTH = 47*60.0
@@ -33,16 +32,14 @@ HALF_ORBIT_LENGTH = 47*60.0
 def get_spice_info(ets, out):
 
     d = {}
-    
-    #check if single value => convert to 1 element array
+
+    # check if single value => convert to 1 element array
     if isinstance(ets, np.generic):
         ets = [ets]
-        
-    
 
-    #sub-observer point data
+    # sub-observer point data
     subpnts = [sp.subpnt(SPICE_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, SPICE_OBSERVER) for et in ets]
-    
+
     if any(x in out for x in ["lat", "lon", "sza"]):
         subpnts_xyz = [subpnt[0] for subpnt in subpnts]
     if any(x in out for x in ["lat", "lon"]):
@@ -56,59 +53,55 @@ def get_spice_info(ets, out):
         lats = np.asfarray(lats_rad) * sp.dpr()
         d["lat"] = lats
     if "sza" in out:
-        #incidence angles
-        surf_ilumin = [sp.ilumin(SPICE_SHAPE_MODEL_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, SPICE_OBSERVER, subpnt_xyz) for et, subpnt_xyz in zip(ets, subpnts_xyz)]
-        #trgepc, srfvec, sslphs, sslsol, sslemi
+        # incidence angles
+        surf_ilumin = [sp.ilumin(SPICE_SHAPE_MODEL_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, SPICE_OBSERVER, subpnt_xyz)
+                       for et, subpnt_xyz in zip(ets, subpnts_xyz)]
+        # trgepc, srfvec, sslphs, sslsol, sslemi
         szas = [ilumin[3] * sp.dpr() for ilumin in surf_ilumin]
-        
+
         d["sza"] = szas
-    
+
     return d
-
-
-
-    
 
 
 def get_data():
     print("SPICE calculations")
-    szas = {"ets":[], "lons":[], "szas":[]}
-    
+    szas = {"ets": [], "lons": [], "szas": []}
+
     for i in range(44000):
-        
+
         if np.mod(i, 1000) == 0:
             print(i)
-    
+
         if i == 0:
-            #get science phase start/end ephemeris times
+            # get science phase start/end ephemeris times
             dt_start = orbit_dict["science_start"] + timedelta(days=1)
             et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
-    
-            #find first equator crossing
+
+            # find first equator crossing
             # 10 second resolution
             ets = np.arange(et_start, et_start + HALF_ORBIT_LENGTH, 10)
         else:
             ets = np.arange(et_start, et_start + 240.0, 10)
-            
-        
+
             lats = get_spice_info(ets, ["lat"])["lat"]
-            
-            #index at equator
+
+            # index at equator
             eq_ix = get_nearest_index(0.0, lats)
-            
-            #params at equator
+
+            # params at equator
             et_eq = ets[eq_ix]
             info_eq = get_spice_info(et_eq, ["lon", "sza"])
             lon_eq = info_eq["lon"]
             sza_eq = info_eq["sza"]
-            
+
             szas["ets"].append(et_eq)
             szas["lons"].append(lon_eq)
             szas["szas"].append(sza_eq)
-            
-            #find next equator
+
+            # find next equator
             et_start = et_eq + HALF_ORBIT_LENGTH - 120.0
-            
+
     return szas
 
 
@@ -152,4 +145,3 @@ plt.savefig("nightside_sza_coverage.png")
 # dts = [sp.et2utc(et, "C", 0) for et in ets]
 
 # n_points = len(ets)
-

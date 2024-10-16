@@ -87,55 +87,52 @@ from tools.file.paths import paths
 # for key in orbit_d.keys():
 #     for kernel in kernels:
 #         sp.furnsh(os.path.join(kernel_root_dir, os.path.normcase(kernel)))
-        
+
 #     sp.furnsh(os.path.join(kernel_root_dir, "spk", key))
-    
 
 
-
-    
 #     print("SPICE calculations", key)
-    
+
 #     #get science phase start/end ephemeris times
 #     dt_start = orbit_d[key]["science_start"]
 #     dt_end = dt_start + timedelta(days=200)
 #     et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
 #     et_end = sp.utc2et(datetime.strftime(dt_end, SPICE_DATETIME_FMT))
-    
-#     #make list of ephemeris times        
+
+#     #make list of ephemeris times
 #     ets = np.arange(et_start, et_end, 1200.0) #one value per X seconds
-    
+
 #     #make strings
 #     dts = [sp.et2utc(et, "C", 0) for et in ets]
-    
+
 #     n_points = len(ets)
-    
+
 #     #spice calculations
 #     venus_radius = sp.bodvrd("VENUS", "RADII", 3)[1][0] #no ellipsoid for Venus -> circular so only one radius value
-    
+
 #     #sub-observer point data
 #     observer = orbit_d[key]["spice_observer"]
 #     subpnts = [sp.subpnt(SPICE_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, observer) for et in ets]
 #     subpnts_xyz = [subpnt[0] for subpnt in subpnts]
-    
-    
+
+
 #     #convert to lat/lons in degrees
 #     reclats = [sp.reclat(subpnt_xyz) for subpnt_xyz in subpnts_xyz]
 #     lons_rad = [reclat[1] for reclat in reclats]
 #     lats_rad = [reclat[2] for reclat in reclats]
 #     lons = np.asfarray(lons_rad) * sp.dpr()
 #     lats = np.asfarray(lats_rad) * sp.dpr()
-    
+
 #     #get orbit altitude
 #     # find obs position/velocity rel to venus in venus frame
 #     obs2venus_spkezrs = [sp.spkezr("VENUS", et, "IAU_VENUS", SPICE_ABCORR, observer) for et in ets]
-    
+
 #     #height of observer above Mars centre
 #     altitudes = [sp.vnorm(spkezr[0][0:3]) for spkezr in obs2venus_spkezrs] - venus_radius
-    
+
 #     #velocities
 #     speeds = [sp.vnorm(spkezr[0][3:6]) for spkezr in obs2venus_spkezrs]
-    
+
 
 #     if key == "EnVision_ESC_T2_2032_SouthVOI.bsp":
 #         with open("altitude_vs_velocity.tsv", "w") as f:
@@ -147,32 +144,30 @@ from tools.file.paths import paths
 
 #     plt.scatter(altitudes, speeds, label=key)
 
-#OIP circular orbit calc
-gsd = 100e3 #m
-r = 6.051e6 #m
-h = 470.0e3 #m
+# OIP circular orbit calc
+gsd = 100e3  # m
+r = 6.051e6  # m
+h = 470.0e3  # m
 # e = np.arange(250, 500, 10) * 1e3 #m
-g = 6.674e-11 #m3 kg−1 s−2
+g = 6.674e-11  # m3 kg−1 s−2
 m = 4.87e24
 
 # it = (gsd / r) * np.sqrt(((r + h)**3) / (g * m))
 
 # v = gsd / it / 1e3
 # print(v)
-    
+
 
 # v = np.sqrt(g * m / (r + h))
 circum_v = 2.0 * np.pi * (r + 0)
 circum_e = 2.0 * np.pi * (r + h)
 
-v = 6.98 #km/s
+v = 6.98  # km/s
 print(v * 14.401)
 
 ground_track = v * 14.401 / circum_e * circum_v
 
 print(ground_track)
-
-
 
 
 # plt.plot(h / 1e3, v, color="k", label="OIP formula")

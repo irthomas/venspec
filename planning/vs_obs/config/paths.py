@@ -17,17 +17,15 @@ else:
 
 paths = {}
 
-if SYSTEM == "Linux": #linux system
+if SYSTEM == "Linux":  # linux system
     paths["BASE_DIRECTORY"] = os.path.normcase(r"/home/iant/linux/Python")
 
 
-elif os.path.exists(os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python")): #outside BIRA
+elif os.path.exists(os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python")):  # outside BIRA
 
     paths["BASE_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python")
     paths["PLANNING_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python\Planning\vs_obs")
+    paths["REFERENCE_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Dropbox\VenSpec\Python\reference_files")
 
-    paths["KERNEL_ROOT_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Documents\DATA\envision_kernels\envision\kernels")
-    paths["KERNEL_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Documents\DATA\envision_kernels\envision\kernels\mk")
-
-
-
+    paths["KERNEL_ROOT_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Documents\DATA\envision_kernels\envision")
+    paths["KERNEL_DIRECTORY"] = os.path.normcase(r"C:\Users\iant\Documents\DATA\envision_kernels\envision\mk")

@@ -7,8 +7,7 @@ Created on Tue Nov  7 09:29:24 2023
 VENSPEC-H LONGITUDE SWATH OVERLAP
 """
 
-
-import os
+# import os
 import numpy as np
 import spiceypy as sp
 from datetime import datetime, timedelta
@@ -18,12 +17,12 @@ import matplotlib.pyplot as plt
 from tools.spice.load_spice_kernels import load_spice_kernels, SPICE_DATETIME_FMT, \
     SPICE_METHOD, SPICE_ABCORR, SPICE_SHAPE_MODEL_METHOD
 
-from tools.general.progress import progress
+# from tools.general.progress import progress
 from tools.general.get_nearest_index import get_nearest_index
 
-#load spice kernels
+# load spice kernels
 orbit_name = "EnVision_ET1_2031_NorthVOI"
-orbit_dict = load_spice_kernels("%s.bsp" %orbit_name)
+orbit_dict = load_spice_kernels("%s.bsp" % orbit_name)
 
 SPICE_OBSERVER = "-668"
 HALF_ORBIT_LENGTH = 47*60.0
@@ -33,22 +32,20 @@ N_ORBITS = 3000
 # START_DATETIME = datetime(2035, 3, 18, 0, 0)
 START_DATETIME = datetime(2038, 4, 18, 0, 0)
 
-VENUS_RADIUS = 6051.8 #km
+VENUS_RADIUS = 6051.8  # km
 
 
 def get_spice_info(ets, out):
 
     d = {}
-    
-    #check if single value => convert to 1 element array
+
+    # check if single value => convert to 1 element array
     if isinstance(ets, np.generic):
         ets = [ets]
-        
-    
 
-    #sub-observer point data
+    # sub-observer point data
     subpnts = [sp.subpnt(SPICE_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, SPICE_OBSERVER) for et in ets]
-    
+
     if any(x in out for x in ["lat", "lon", "sza"]):
         subpnts_xyz = [subpnt[0] for subpnt in subpnts]
     if any(x in out for x in ["lat", "lon"]):
@@ -62,60 +59,56 @@ def get_spice_info(ets, out):
         lats = np.asfarray(lats_rad) * sp.dpr()
         d["lat"] = lats
     if "sza" in out:
-        #incidence angles
-        surf_ilumin = [sp.ilumin(SPICE_SHAPE_MODEL_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, SPICE_OBSERVER, subpnt_xyz) for et, subpnt_xyz in zip(ets, subpnts_xyz)]
-        #trgepc, srfvec, sslphs, sslsol, sslemi
+        # incidence angles
+        surf_ilumin = [sp.ilumin(SPICE_SHAPE_MODEL_METHOD, "VENUS", et, "IAU_VENUS", SPICE_ABCORR, SPICE_OBSERVER, subpnt_xyz)
+                       for et, subpnt_xyz in zip(ets, subpnts_xyz)]
+        # trgepc, srfvec, sslphs, sslsol, sslemi
         szas = [ilumin[3] * sp.dpr() for ilumin in surf_ilumin]
-        
+
         d["sza"] = szas
-    
+
     return d
-
-
-
-    
 
 
 def get_data():
     print("SPICE calculations")
-    szas = {"ets":[], "lons":[], "szas":[]}
-    
+    szas = {"ets": [], "lons": [], "szas": []}
+
     for i in range(N_ORBITS):
-        
+
         if np.mod(i, int(N_ORBITS/20)) == 0:
             print(i)
-    
+
         if i == 0:
-            #get science phase start/end ephemeris times
+            # get science phase start/end ephemeris times
             dt_start = START_DATETIME + timedelta(days=1)
             et_start = sp.utc2et(datetime.strftime(dt_start, SPICE_DATETIME_FMT))
-    
-            #find first equator crossing
+
+            # find first equator crossing
             # 10 second resolution
             ets = np.arange(et_start, et_start + HALF_ORBIT_LENGTH, 1)
         else:
             ets = np.arange(et_start, et_start + 240.0, 0.1)
-            
-        
+
         lats = get_spice_info(ets, ["lat"])["lat"]
-        
-        #index at equator
+
+        # index at equator
         eq_ix = get_nearest_index(0.0, lats)
-        
-        #params at equator
+
+        # params at equator
         et_eq = ets[eq_ix]
         # print(i, et_eq - et_start)
         info_eq = get_spice_info(et_eq, ["lon", "sza"])
         lon_eq = info_eq["lon"]
         sza_eq = info_eq["sza"]
-        
+
         szas["ets"].append(et_eq)
         szas["lons"].append(lon_eq)
         szas["szas"].append(sza_eq)
-        
-        #find next equator
+
+        # find next equator
         et_start = et_eq + HALF_ORBIT_LENGTH - 120.0
-            
+
     return szas
 
 
@@ -145,7 +138,7 @@ lons_diff = np.diff(eq_crossing_lons)
 
 km_diff = (2 * np.pi * VENUS_RADIUS) * lons_diff / 360.0
 
-#remove transitions
+# remove transitions
 trans_ixs = np.where(np.abs(km_diff) > 100.0)[0]
 for trans_ix in trans_ixs:
     km_diff[trans_ix] = km_diff[trans_ix-1]
@@ -154,9 +147,7 @@ for trans_ix in trans_ixs:
 plt.figure(figsize=(12, 8))
 plt.title("Longitudinal difference between consecutive orbits when crossing the equator")
 plt.scatter(eq_crossing_days[:-1], km_diff)
-plt.xlabel("Days elapsed starting %s" %str(START_DATETIME))
+plt.xlabel("Days elapsed starting %s" % str(START_DATETIME))
 plt.ylabel("Distance between consecutive orbits (km)")
 plt.grid()
-plt.savefig("distance_between_consecutive_orbits_%s.png" %(str(START_DATETIME)[0:10]))
-
-
+plt.savefig("distance_between_consecutive_orbits_%s.png" % (str(START_DATETIME)[0:10]))
