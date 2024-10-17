@@ -74,8 +74,11 @@ dayside_sza_limit = 95.0  # for centre of FOV
 plots = ["groundtracks"]  # plot just groundtracks
 # plots = []  # plot nothing
 
-n_blocks = 5  # number of 4-orbit blocks to be simulated
+n_blocks = 5  # number of 4-orbit blocks to be simulated (more = longer calculation)
 # n_blocks = 1  # number of 4-orbit blocks to be simulated
+
+n_orbits = 4  # number of orbits within each venspec block (normal operations)
+# n_orbits = 1  # number of orbits within each venspec block (for testing only)
 
 nightside_filter_sequence_name = "night_123d"
 dayside_filter_sequence_name = "day_22h44hd"
@@ -89,7 +92,7 @@ dayside_filter_sequences = filter_sequences[dayside_filter_sequence_name]
 # calculate the orbit block start and end times
 start_orbit_number = get_orbit_number(orbit_number_dts, utc_start_time)
 start_orbit_numbers = [start_orbit_number + i for i in np.arange(n_blocks) * 15]
-end_orbit_numbers = [i + 4 for i in start_orbit_numbers]
+end_orbit_numbers = [i + n_orbits for i in start_orbit_numbers]
 
 
 print("Planning VenSpec orbits %i to %i" % (start_orbit_numbers[0], end_orbit_numbers[-1]))
@@ -100,6 +103,8 @@ v_block_dt_ends = [k[0] + timedelta(minutes=10) for i, k in enumerate(orbit_numb
 # v_block_dt_starts = [utc_start_time + timedelta(seconds=int(i)) for i in np.arange(n_blocks) * 5620 * 15]
 # v_block_dt_ends = [v_block_dt_start + timedelta(minutes=390) for v_block_dt_start in v_block_dt_starts]
 
+utc_start_str = str(v_block_dt_starts[0])
+utc_end_str = str(v_block_dt_ends[-1])
 
 orbit_plan = []
 for v_block_dt_start, v_block_dt_end in zip(v_block_dt_starts, v_block_dt_ends):
@@ -186,7 +191,7 @@ for v_block_dt_start, v_block_dt_end in zip(v_block_dt_starts, v_block_dt_ends):
             plt.text(et, lat_dayside_end, "End %i %s" % (i + 1, str(dt)[:-7]))
 
     # now figure out how many filters to run in this time
-    for orbit_ix in range(4):
+    for orbit_ix in range(n_orbits):
 
         # orbit_number = 0
         nightside_filter_sequence = nightside_filter_sequences[orbit_ix]
@@ -439,6 +444,7 @@ if "groundtracks" in plots:
     plt.imshow(venus_topo, extent=(-180, 180, -90, 90), interpolation="bilinear", cmap=cmap, aspect=1, alpha=0.5)
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
+    plt.title("VenSpec-H Observation Plan for Orbits %i-%i\n%s to %s" % (start_orbit_numbers[0], end_orbit_numbers[-1], utc_start_str, utc_end_str))
 
     for orbit in orbit_plan:
         tracks = {}
